@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXORA Player</title>
+<meta name="description" content="NEXORA Player – luajtës IPTV për listat e tua M3U, Xtream Codes dhe API Token, me guidë programesh (EPG).">
+<meta name="theme-color" content="#0B0B0D">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NEXORA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.13/hls.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js" defer></script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+
+<svg class="bg-logo" viewBox="-6 -8 754 116" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="6" stroke-miterlimit="1"><polyline points="5,100 5,6 71,94 71,0"/><path d="M140 5H200M140 50H200M140 95H200"/><path d="M260 0L326 100M326 0L260 100"/><circle cx="434" cy="50" r="45"/><path d="M549 100V5H585A26.5 26.5 0 0 1 585 58H549M581 58L616 100"/><polyline points="674,100 708,3 742,100"/></g></svg>
+
+<div class="shell">
+  <header class="top">
+    <a href="#/" class="brand" aria-label="NEXORA – Kryefaqja">
+      <svg viewBox="-6 -8 754 116" role="img" aria-label="NEXORA"><g fill="none" stroke="currentColor" stroke-width="10" stroke-miterlimit="1"><polyline points="5,100 5,6 71,94 71,0"/><path d="M140 5H200M140 50H200M140 95H200"/><path d="M260 0L326 100M326 0L260 100"/><circle cx="434" cy="50" r="45"/><path d="M549 100V5H585A26.5 26.5 0 0 1 585 58H549M581 58L616 100"/><polyline points="674,100 708,3 742,100"/></g></svg>
+    </a>
+    <nav class="tabs" aria-label="Menyja">
+      <a href="#/" data-nav="">Kryefaqja</a>
+      <a href="#/live" data-nav="live">Live TV</a>
+      <a href="#/guida" data-nav="guida">Guida</a>
+      <a href="#/filma" data-nav="filma">Filma</a>
+      <a href="#/seriale" data-nav="seriale">Seriale</a>
+    </nav>
+    <div class="top-right">
+      <label class="language-picker">
+        <span class="sr" data-i18n="language-label">Gjuha</span>
+        <select id="language-select" aria-label="Gjuha">
+          <option value="sq">Shqip</option>
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <span class="clock mono" id="clock">--:--</span>
+      <a href="#/listat" class="icon-btn" data-nav="listat" aria-label="Listat dhe cilësimet" title="Listat dhe cilësimet">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <footer class="foot">
+    <span>NEXORA Player është vetëm luajtës – nuk ofron, shet apo ruan kanale ose përmbajtje.</span>
+    <a href="#/ligjore">Kushtet &amp; Privatësia</a>
+    <a href="#/ligjore">Impressum</a>
+  </footer>
+</div>
+
+<div id="overlay" class="overlay" hidden>
+  <div class="ov-box" role="dialog" aria-modal="true" aria-labelledby="ov-title">
+    <div class="ov-head">
+      <h2 id="ov-title"></h2>
+      <button type="button" class="btn ghost" id="ov-close">Mbyll</button>
+    </div>
+    <div id="ov-body" class="ov-body"></div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "NEXORA Player",
+  "short_name": "NEXORA",
+  "description": "Luajtës IPTV për listat e tua M3U, Xtream Codes dhe API Token, me EPG.",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0B0D",
+  "theme_color": "#0B0B0D",
+  "lang": "sq",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
