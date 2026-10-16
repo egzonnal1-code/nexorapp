@@ -128,5 +128,4 @@ Serveri kthen një listë M3U, ose JSON:
 ## Ligjore
 
 - NEXORA Player është **vetëm luajtës**: nuk ofron, nuk shet dhe nuk transmeton kanale. Klienti shton listën e vet në program dhe konfirmon që ka të drejtë ligjore për të.
-- Para publikimit plotëso `[RRUGA DHE NUMRI]` dhe `[E-MAIL]` te `www/js/app.js` (funksioni `legal()`).
 - Mos e lidh programin me reklama që shesin kanale me pagesë (Sky, DAZN, Netflix etj.) pa licencë.

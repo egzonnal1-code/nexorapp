@@ -566,7 +566,7 @@ function legal() {
     <h2>Ofruesit e përmbajtjes</h2>
     <p>Markat dhe emrat e kanaleve që mund të shfaqen në listën tënde u përkasin pronarëve përkatës. NEXORA nuk ka lidhje me ta.</p>
     <h2>Impressum</h2>
-    <p>NEXORA – Webdesign &amp; Software<br>Egzon Aliti<br>[RRUGA DHE NUMRI]<br>5600 Lenzburg, Zvicër<br>E-mail: [E-MAIL]<br>Web: <a href="https://nexoraweb.ch" style="text-decoration:underline">nexoraweb.ch</a></p>
+    <p>NEXORA – Webdesign &amp; Software<br>Egzon Aliti<br>5600 Lenzburg, Zvicër<br>E-mail: <a href="mailto:egz0nn@live.com" style="text-decoration:underline">egz0nn@live.com</a><br>Web: <a href="https://nexoraweb.ch" style="text-decoration:underline">nexoraweb.ch</a></p>
   </article>`;
 }
 
