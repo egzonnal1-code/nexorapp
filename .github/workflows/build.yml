@@ -61,10 +61,26 @@ jobs:
           EOF
       - name: Ndërto APK
         working-directory: android
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-      - run: mv android/app/build/outputs/apk/debug/app-debug.apk NEXORA-Player.apk
+          if [ -n "$KS_B64" ]; then
+            # Nënshkrim i përhershëm → përditësimet instalohen mbi versionin e vjetër
+            ./gradlew assembleRelease --no-daemon
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+            "$BT/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+            "$BT/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-pass env:KS_PASS --ks-key-alias "$KS_ALIAS" --key-pass env:KS_PASS --out ../NEXORA-Player.apk "$RUNNER_TEMP/aligned.apk"
+            "$BT/apksigner" verify --print-certs ../NEXORA-Player.apk | head -3
+            rm -f "$RUNNER_TEMP/release.jks"
+          else
+            echo "::warning::Mungojnë secrets ANDROID_KEYSTORE_* – po ndërtohet APK debug."
+            ./gradlew assembleDebug --no-daemon
+            mv app/build/outputs/apk/debug/app-debug.apk ../NEXORA-Player.apk
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: NEXORA-Player-Android

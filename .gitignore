@@ -4,3 +4,5 @@ android/
 ios/
 .netlify/
 .DS_Store
+*.jks
+*.keystore
