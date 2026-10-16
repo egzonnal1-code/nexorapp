@@ -1,0 +1,96 @@
+# NEXORA Player – ndërton automatikisht setup-in për Windows dhe APK për Android.
+# Nis: GitHub → Actions → "Ndërto NEXORA Player" → Run workflow
+# (ose automatikisht kur bën push një tag si v1.0.1)
+# Çdo build publikohet si "latest" te Releases → nexoraweb.ch/app.html shkarkon gjithmonë versionin e ri.
+name: Ndërto NEXORA Player
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows (.exe)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm run build:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NEXORA-Player-Windows
+          path: dist/*.exe
+
+  android:
+    name: Android (.apk)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm install --no-audit --no-fund
+      - run: npx cap add android
+      - name: Ikonat e aplikacionit
+        run: npm run android:icons
+        continue-on-error: true
+      - run: npx cap sync android
+      - name: Mbështetje për Android TV (telekomandë + ikonë në TV)
+        run: |
+          python3 - <<'EOF'
+          import re
+          p = 'android/app/src/main/AndroidManifest.xml'
+          s = open(p, encoding='utf-8').read()
+          if 'LEANBACK_LAUNCHER' not in s:
+              s = re.sub(r'(<category android:name="android\.intent\.category\.LAUNCHER"\s*/>)',
+                         r'\1\n                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />', s, count=1)
+              s = s.replace('<application', '<uses-feature android:name="android.software.leanback" android:required="false" />\n    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />\n    <application android:banner="@mipmap/ic_launcher"', 1)
+          open(p, 'w', encoding='utf-8').write(s)
+          print(s)
+          EOF
+      - name: Ndërto APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - run: mv android/app/build/outputs/apk/debug/app-debug.apk NEXORA-Player.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NEXORA-Player-Android
+          path: NEXORA-Player.apk
+
+  release:
+    name: Publiko te GitHub Releases (latest)
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+      # Emra fiks, që linku në nexoraweb.ch të mos ndryshojë kurrë:
+      # .../releases/latest/download/NEXORA-Player-Setup.exe dhe NEXORA-Player.apk
+      - name: Emrat fiks të skedarëve
+        run: |
+          mkdir -p release
+          cp out/NEXORA-Player-Windows/*.exe release/NEXORA-Player-Setup.exe
+          cp out/NEXORA-Player-Android/*.apk release/NEXORA-Player.apk
+          ls -la release
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('build-{0}', github.run_number) }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('NEXORA Player {0}', github.ref_name) || format('NEXORA Player – build {0}', github.run_number) }}
+          make_latest: true
+          files: |
+            release/NEXORA-Player-Setup.exe
+            release/NEXORA-Player.apk

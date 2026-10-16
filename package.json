@@ -1,0 +1,67 @@
+{
+  "name": "nexora-player",
+  "version": "1.0.0",
+  "description": "NEXORA Player – luajtës IPTV me EPG për listat e tua (M3U, Xtream Codes, API Token)",
+  "author": "NEXORA – Egzon Aliti",
+  "homepage": "https://nexoraweb.ch",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis --x64 --publish never",
+    "build:mac": "electron-builder --mac dmg --publish never",
+    "android:add": "cap add android",
+    "android:icons": "capacitor-assets generate --android --iconBackgroundColor \"#000000\" --splashBackgroundColor \"#0B0B0D\"",
+    "android:sync": "cap sync android",
+    "android:open": "cap open android",
+    "ios:add": "cap add ios",
+    "ios:sync": "cap sync ios",
+    "ios:open": "cap open ios"
+  },
+  "build": {
+    "appId": "ch.nexoraweb.player",
+    "productName": "NEXORA Player",
+    "copyright": "© NEXORA",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**",
+      "www/**",
+      "build/icon.png",
+      "build/installer-icon.ico",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/installer-icon.ico",
+      "artifactName": "NEXORA-Player-Setup-${version}.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NEXORA Player",
+      "installerIcon": "build/installer-icon.ico",
+      "uninstallerIcon": "build/installer-icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.png",
+      "category": "public.app-category.entertainment"
+    }
+  },
+  "devDependencies": {
+    "@capacitor/android": "6.2.0",
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "6.2.0",
+    "@capacitor/core": "6.2.0",
+    "@capacitor/ios": "6.2.0",
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  }
+}

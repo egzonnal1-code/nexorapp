@@ -1,0 +1,26 @@
+[build]
+  publish = "www"
+  functions = "netlify/functions"
+  command = "echo 'NEXORA Player – pa build'"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    X-Frame-Options = "SAMEORIGIN"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+
+[build.environment]
+  NODE_VERSION = "20"
+  ELECTRON_SKIP_BINARY_DOWNLOAD = "1"

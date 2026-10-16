@@ -1,0 +1,21 @@
+{
+  "appId": "ch.nexoraweb.player",
+  "appName": "NEXORA Player",
+  "webDir": "www",
+  "backgroundColor": "#0B0B0D",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#0B0B0D"
+  },
+  "ios": {
+    "backgroundColor": "#0B0B0D",
+    "contentInset": "never"
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}
