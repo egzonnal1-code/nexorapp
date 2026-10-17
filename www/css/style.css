@@ -428,3 +428,8 @@ body.tvfull { overflow: hidden; }
 #live-player { cursor: pointer; }
 #live-player:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 body.tvfull #live-player { cursor: default; }
+/* TV: më pak efekte = lëvizje më e shpejtë me telekomandë */
+@media (min-width: 801px) and (max-height: 760px) {
+  .bg-logo { display: none; }
+  .lv-g, .lv-chs .ch, .cat, .tile { transition: none; }
+}

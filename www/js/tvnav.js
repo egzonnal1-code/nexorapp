@@ -11,9 +11,45 @@ function visible(el) {
   return cs.visibility !== 'hidden' && cs.display !== 'none' && !el.closest('[hidden], [inert]');
 }
 
+// ── Rruga e shpejtë për listat e gjata (kanale, grupe): pa llogaritur gjithë ekranin ──
+const ROW = '.ch, .lv-g';
+function keepVisible(el) {
+  const box = el.parentElement;
+  if (!box) return;
+  const top = el.offsetTop - box.offsetTop;
+  const bottom = top + el.offsetHeight;
+  if (top < box.scrollTop) box.scrollTop = top;
+  else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight;
+}
+function focusRow(el) {
+  if (!el) return false;
+  el.focus({ preventScroll: true });
+  keepVisible(el);
+  return true;
+}
+function fastMove(a, dir) {
+  if (!a || !a.matches) return false;
+  // lart/poshtë brenda listës
+  if (dir[1] !== 0 && a.matches(ROW)) {
+    let n = dir[1] > 0 ? a.nextElementSibling : a.previousElementSibling;
+    while (n && !(n.matches && n.matches(ROW))) n = dir[1] > 0 ? n.nextElementSibling : n.previousElementSibling;
+    if (n) return focusRow(n);
+    return true; // në fund të listës: qëndro aty
+  }
+  // majtas/djathtas mes kolonave të Live TV
+  if (dir[0] !== 0) {
+    if (a.matches('.lv-g') && dir[0] > 0) return focusRow(document.querySelector('#ch-list .ch.on') || document.querySelector('#ch-list .ch'));
+    if (a.matches('.ch') && dir[0] < 0) return focusRow(document.querySelector('.lv-g.on') || document.querySelector('.lv-g'));
+    if (a.matches('.ch') && dir[0] > 0) { const pl = document.getElementById('live-player'); if (pl) { pl.focus({ preventScroll: true }); return true; } }
+    if (a.id === 'live-player' && dir[0] < 0) return focusRow(document.querySelector('#ch-list .ch.on') || document.querySelector('#ch-list .ch'));
+  }
+  return false;
+}
+
 document.addEventListener('keydown', (e) => {
   if (document.body.classList.contains('tvfull')) return; // në ekran të plotë shigjetat ndërrojnë kanalin
   const dir = DIRS[e.key] || CODES[e.keyCode];
+  if (dir && !e.altKey && !e.ctrlKey && !e.metaKey && fastMove(document.activeElement, dir)) { e.preventDefault(); return; }
   if (!dir || e.altKey || e.ctrlKey || e.metaKey) return;
   const a = document.activeElement;
   // brenda fushave të tekstit shigjetat majtas/djathtas lëvizin kursorin
