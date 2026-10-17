@@ -251,6 +251,7 @@ function live() {
           <video id="live-video" controls playsinline></video>
           <span class="badge-live">● LIVE</span>
           <div class="player-msg" id="player-msg">Zgjidh një kanal nga lista.</div>
+          <div class="player-status" id="player-status" hidden></div>
         </div>
         <div class="live-info" id="live-info"></div>
         <div class="mini-epg" id="live-epg"></div>
@@ -318,7 +319,10 @@ function playChannel(ch) {
   const btn = document.querySelector(`.ch[data-ch="${CSS.escape(ch.id)}"]`);
   if (btn) { btn.classList.add('on'); btn.scrollIntoView({ block: 'nearest' }); }
   msg.hidden = true;
-  Player.play(video, ch.url, (m) => { msg.textContent = m; msg.hidden = false; });
+  const status = $('#player-status');
+  if (status) status.hidden = true;
+  Player.play(video, ch.url, (m) => { msg.textContent = m; msg.hidden = false; if (status) status.hidden = true; },
+    (m) => { if (status) { status.textContent = m; status.hidden = !m; } });
   renderLiveInfo();
   ensureShortEpg(ch);
 }
@@ -400,8 +404,9 @@ function closeOverlay() {
   $('#ov-body').innerHTML = '';
 }
 function playInOverlay(title, url) {
-  openOverlay(title, `<div class="player"><video id="ov-video" controls playsinline autoplay></video><div class="player-msg" id="ov-msg" hidden></div></div>`);
-  Player.play($('#ov-video'), url, (m) => { const el = $('#ov-msg'); el.textContent = m; el.hidden = false; });
+  openOverlay(title, `<div class="player"><video id="ov-video" controls playsinline autoplay></video><div class="player-msg" id="ov-msg" hidden></div><div class="player-status" id="ov-status" hidden></div></div>`);
+  Player.play($('#ov-video'), url, (m) => { const el = $('#ov-msg'); el.textContent = m; el.hidden = false; },
+    (m) => { const st = $('#ov-status'); if (st) { st.textContent = m; st.hidden = !m; } });
 }
 async function openSeries(s) {
   const pl = active();
@@ -508,6 +513,15 @@ function lists() {
         </div>`).join('')}
       ${S.data && S.data.account && S.data.account.expires ? `<p class="hint">Llogaria Xtream skadon më: ${new Date(S.data.account.expires).toLocaleDateString(locale())}</p>` : ''}
       <p class="hint">Të dhënat ruhen vetëm në këtë pajisje. NEXORA nuk i merr dhe nuk i ruan në server.</p>
+    </section>
+    <section class="card" aria-labelledby="h-play" style="max-width:820px">
+      <div class="sec-head"><h2 id="h-play">Luajtja</h2></div>
+      <div class="field"><span>Buffer-i (sa video ngarkohet përpara)</span>
+        <div class="seg seg-3" role="radiogroup" aria-label="Buffer-i">
+          ${Object.entries(Player.BUFFERS).map(([k, b]) => `<button type="button" role="radio" aria-checked="${Player.getBuffer() === k}" class="${Player.getBuffer() === k ? 'on' : ''}" data-buffer="${k}">${b.label}</button>`).join('')}
+        </div>
+      </div>
+      <p class="hint">Nëse kanalet ngecin shpesh, zgjidh “I madh”. Kanali fillon pak më ngadalë, por ngec më rrallë. Kur transmetimi ndalet, NEXORA rilidhet vetë.</p>
     </section>`;
 }
 
@@ -584,6 +598,8 @@ view.addEventListener('click', (e) => {
     S.editId = null; S.formErr = ''; S.draft = null;
   } else if (d.act === 'reload') {
     loadActive();
+  } else if (d.buffer) {
+    Player.setBuffer(d.buffer); lists();
   } else if (d.act === 'live-search') {
     const q = $('#live-q'); if (q) { q.focus(); q.select(); }
   } else if (d.act === 'fullscreen') {

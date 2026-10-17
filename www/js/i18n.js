@@ -4,6 +4,18 @@ const ORIGINAL_TEXT = new WeakMap();
 const ORIGINAL_ATTR = new WeakMap();
 
 const MESSAGES = {
+  'Luajtja': ['Wiedergabe', 'Playback'],
+  'Buffer-i (sa video ngarkohet përpara)': ['Puffer (wie viel Video vorgeladen wird)', 'Buffer (how much video is loaded ahead)'],
+  'I vogël – fillon shpejt': ['Klein – startet schnell', 'Small – starts fast'],
+  'Normal': ['Normal', 'Normal'],
+  'I madh – ngec më rrallë': ['Gross – weniger Ruckler', 'Large – fewer stalls'],
+  'Nëse kanalet ngecin shpesh, zgjidh “I madh”. Kanali fillon pak më ngadalë, por ngec më rrallë. Kur transmetimi ndalet, NEXORA rilidhet vetë.': ['Wenn Sender oft ruckeln, wähle „Gross“. Der Sender startet etwas langsamer, ruckelt aber seltener. Bricht der Stream ab, verbindet sich NEXORA automatisch neu.', 'If channels stall often, choose “Large”. The channel starts a little slower but stalls less. If the stream stops, NEXORA reconnects automatically.'],
+  'Ofruesi refuzoi qasjen (403). Kontrollo llogarinë: mund të ketë skaduar ose është hapur në shumë pajisje njëkohësisht.': ['Der Anbieter hat den Zugriff verweigert (403). Prüfe dein Konto: Es ist evtl. abgelaufen oder auf zu vielen Geräten gleichzeitig offen.', 'The provider denied access (403). Check your account: it may have expired or be open on too many devices at once.'],
+  'Ky kanal nuk ekziston më te ofruesi ose është jashtë funksionit.': ['Dieser Sender existiert beim Anbieter nicht mehr oder ist ausser Betrieb.', 'This channel no longer exists at the provider or is offline.'],
+  'Kjo pajisje nuk e luan dot formatin e këtij kanali (p.sh. HEVC/4K). Provo versionin FHD/HD.': ['Dieses Gerät kann das Format dieses Senders nicht abspielen (z. B. HEVC/4K). Versuche die FHD/HD-Version.', 'This device can’t play this channel’s format (e.g. HEVC/4K). Try the FHD/HD version.'],
+  'Serveri i ofruesit nuk përgjigjet. Ky problem është te ofruesi, jo te NEXORA – provo pas pak ose kontakto ofruesin.': ['Der Server des Anbieters antwortet nicht. Das Problem liegt beim Anbieter, nicht bei NEXORA – versuche es später oder kontaktiere den Anbieter.', 'The provider’s server is not responding. The problem is with the provider, not NEXORA – try again later or contact your provider.'],
+  'Transmetimi nuk mund të luhet. Kanali mund të jetë jashtë funksionit te ofruesi.': ['Der Stream kann nicht abgespielt werden. Der Sender ist beim Anbieter evtl. ausser Betrieb.', 'The stream can’t be played. The channel may be offline at the provider.'],
+  'Transmetimi u ndërpre disa herë. Serveri i ofruesit ose interneti nuk është i qëndrueshëm – provo pas pak.': ['Der Stream wurde mehrmals unterbrochen. Der Server des Anbieters oder das Internet ist instabil – versuche es später.', 'The stream was interrupted several times. The provider’s server or the internet is unstable – try again later.'],
   'Kryefaqja': ['Startseite', 'Home'],
   'NEXORA – Kryefaqja': ['NEXORA – Startseite', 'NEXORA – Home'],
   'Gjuha': ['Sprache', 'Language'],
@@ -179,6 +191,12 @@ function translateText(value, language) {
       ? `${count[1]} ${groups} · ${count[2]} ${count[2] === '1' ? 'Sender' : 'Sender'}`
       : `${count[1]} ${groups} · ${count[2]} ${channels}`;
     return value.replace(trimmed, translated);
+  }
+  const reconn = trimmed.match(/^Transmetimi u ndal – po rilidhet… \((\d)\/5\)$/);
+  if (reconn) {
+    return value.replace(trimmed, language === 'de'
+      ? `Stream unterbrochen – verbinde neu… (${reconn[1]}/5)`
+      : `Stream stopped – reconnecting… (${reconn[1]}/5)`);
   }
   const channelCount = trimmed.match(/^(\d+) kanale?$/);
   if (channelCount) {
