@@ -1,7 +1,7 @@
 {
   "name": "nexora-player",
   "version": "1.0.0",
-  "description": "NEXORA Player – luajtës IPTV me EPG për listat e tua (M3U, Xtream Codes, API Token)",
+  "description": "NEXORA – luajtës IPTV me EPG për listat e tua (M3U, Xtream Codes, API Token)",
   "author": "NEXORA – Egzon Aliti",
   "homepage": "https://nexoraweb.ch",
   "license": "UNLICENSED",
@@ -21,7 +21,7 @@
   },
   "build": {
     "appId": "ch.nexoraweb.player",
-    "productName": "NEXORA Player",
+    "productName": "NEXORA",
     "copyright": "© NEXORA",
     "directories": {
       "output": "dist",
@@ -45,7 +45,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "NEXORA Player",
+      "shortcutName": "NEXORA",
       "installerIcon": "build/installer-icon.ico",
       "uninstallerIcon": "build/installer-icon.ico"
     },

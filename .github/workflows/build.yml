@@ -1,8 +1,8 @@
-# NEXORA Player – ndërton automatikisht setup-in për Windows dhe APK për Android.
-# Nis: GitHub → Actions → "Ndërto NEXORA Player" → Run workflow
+# NEXORA – ndërton automatikisht setup-in për Windows dhe APK për Android.
+# Nis: GitHub → Actions → "Ndërto NEXORA" → Run workflow
 # (ose automatikisht kur bën push një tag si v1.0.1)
 # Çdo build publikohet si "latest" te Releases → nexoraweb.ch/app.html shkarkon gjithmonë versionin e ri.
-name: Ndërto NEXORA Player
+name: Ndërto NEXORA
 
 on:
   workflow_dispatch:
@@ -124,7 +124,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('build-{0}', github.run_number) }}
-          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('NEXORA Player {0}', github.ref_name) || format('NEXORA Player – build {0}', github.run_number) }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('NEXORA {0}', github.ref_name) || format('NEXORA – build {0}', github.run_number) }}
           make_latest: true
           files: |
             release/NEXORA-Player-Setup.exe

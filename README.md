@@ -1,4 +1,4 @@
-# NEXORA Player – Setup për Windows, Android, iPhone dhe Web
+# NEXORA – Setup për Windows, Android, iPhone dhe Web
 
 Një projekt për të gjitha pajisjet:
 
@@ -33,7 +33,7 @@ Të dhënat ruhen **vetëm në pajisjen e klientit**. Nuk ka server me playlista
 ## HAPI 2 – Ndërto setup-in (.exe) dhe APK-në
 
 1. Në GitHub hap repo-n → tab-i **Actions**. Nëse pyet, kliko “I understand… enable”.
-2. Majtas zgjidh **Ndërto NEXORA Player** → **Run workflow** → **Run workflow**.
+2. Majtas zgjidh **Ndërto NEXORA** → **Run workflow** → **Run workflow**.
 3. Prit rreth 8–12 minuta, derisa del ✅ e gjelbër.
 4. Hape run-in → poshtë te **Artifacts** shkarko:
    - `NEXORA-Player-Windows` → brenda është **NEXORA-Player-Setup-1.0.0.exe**
@@ -46,7 +46,7 @@ Versionet e reja: ndrysho `"version"` te `package.json` (p.sh. `1.0.1`) dhe nis 
 ### Windows
 1. Hap `NEXORA-Player-Setup-1.0.0.exe`.
 2. Windows SmartScreen mund të thotë “Windows protected your PC”, sepse programi ende nuk ka certifikatë. Kliko **More info → Run anyway**.
-3. Zgjidh dosjen → **Install**. Ikona **NEXORA Player** del në Desktop dhe në Start.
+3. Zgjidh dosjen → **Install**. Ikona **NEXORA** del në Desktop dhe në Start.
 4. **F11** hap ekranin e plotë.
 
 ### Android (telefon / tablet)
@@ -127,5 +127,5 @@ Serveri kthen një listë M3U, ose JSON:
 
 ## Ligjore
 
-- NEXORA Player është **vetëm luajtës**: nuk ofron, nuk shet dhe nuk transmeton kanale. Klienti shton listën e vet në program dhe konfirmon që ka të drejtë ligjore për të.
+- NEXORA është **vetëm luajtës**: nuk ofron, nuk shet dhe nuk transmeton kanale. Klienti shton listën e vet në program dhe konfirmon që ka të drejtë ligjore për të.
 - Mos e lidh programin me reklama që shesin kanale me pagesë (Sky, DAZN, Netflix etj.) pa licencë.

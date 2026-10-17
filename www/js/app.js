@@ -1,4 +1,4 @@
-// NEXORA Player – aplikacioni kryesor
+// NEXORA – aplikacioni kryesor
 import { loadDb, saveDb } from './store.js';
 import { parseM3U } from './m3u.js';
 import * as Xtream from './xtream.js';
@@ -34,7 +34,7 @@ const S = {
   epg: new Epg(),
   loading: false,
   err: '',
-  live: { group: '', q: '', sel: null, page: 'groups' },
+  live: { group: '', q: '', sel: null },
   vod: { group: '', q: '' },
   ser: { group: '', q: '' },
   guide: { group: '' },
@@ -60,7 +60,7 @@ function setStatus(msg, isErr = false) {
 async function loadActive({ quiet = false, silent = false } = {}) {
   const pl = active();
   S.data = null; S.err = ''; S.epg = new Epg(); S.shortTried.clear();
-  S.live = { group: '', q: '', sel: null, page: 'groups' };
+  S.live = { group: '', q: '', sel: null };
   if (!pl) { render(); return; }
   S.loading = true;
   setStatus(`Duke ngarkuar “${pl.name}”…`);
@@ -215,55 +215,39 @@ function groupsOf(list, skipFixed = false) {
   return skipFixed ? g.filter((x) => !['sport', 'shqip'].includes(x.trim().toLowerCase())) : g;
 }
 
+function liveGroupsList(chs) {
+  const fixed = [
+    { key: '', name: 'Të gjitha', count: chs.length },
+    { key: '__fav', name: 'Të preferuarat', count: liveFilter(chs, '__fav').length },
+    { key: '__sport', name: 'Sport', count: liveFilter(chs, '__sport').length },
+    { key: '__shqip', name: 'Shqip', count: liveFilter(chs, '__shqip').length },
+  ].filter((g) => g.key === '' || g.key === '__fav' || g.count);
+  const groups = groupsOf(chs, true).map((name) => ({
+    key: name, name: name || 'Pa kategori', count: chs.filter((ch) => ch.group === name).length,
+  }));
+  return fixed.concat(groups);
+}
+
+function renderGroupList() {
+  const box = $('#lv-groups');
+  if (!box || !S.data) return;
+  box.innerHTML = liveGroupsList(S.data.live).map((g) => `<button class="lv-g ${S.live.group === g.key ? 'on' : ''}" data-lgroup="${esc(g.key)}">
+      <span class="ell">${esc(g.name)}</span><span class="cnt">${g.count}</span></button>`).join('');
+}
+
 function live() {
   if (needList()) return;
   const chs = S.data.live;
   if (!chs.length) { view.innerHTML = '<div class="empty">Kjo listë nuk ka kanale live.</div>'; return; }
-  if (S.live.page === 'groups') {
-    const groups = groupsOf(chs, true).map((name) => ({
-      key: name,
-      name: name || 'Pa kategori',
-      count: chs.filter((ch) => ch.group === name).length,
-    }));
-    const shortcuts = [
-      { key: '__fav', name: 'Të preferuarat', count: liveFilter(chs, '__fav').length },
-      { key: '__sport', name: 'Sport', count: liveFilter(chs, '__sport').length },
-      { key: '__shqip', name: 'Shqip', count: liveFilter(chs, '__shqip').length },
-    ].filter((group) => group.count);
-    const cards = shortcuts.concat(groups);
-    view.innerHTML = `
-      <section class="live-groups" aria-labelledby="live-groups-title">
-        <div class="sec-head">
-          <div><h1 id="live-groups-title">Grupet e kanaleve</h1><p class="sub">Zgjidh një grup për të parë kanalet.</p></div>
-          <span class="sub">${cards.length} grupe · ${chs.length} kanale</span>
-        </div>
-        <div class="live-group-grid">
-          ${cards.map((group) => `<button class="live-group-card" data-lgroup="${esc(group.key)}">
-            <span class="live-group-icon">${icon('tv', 28)}</span>
-            <span class="live-group-name">${esc(group.name)}</span>
-            <span class="sub">${group.count} ${group.count === 1 ? 'kanal' : 'kanale'}</span>
-            <span class="live-group-arrow" aria-hidden="true">›</span>
-          </button>`).join('')}
-        </div>
-      </section>`;
-    return;
-  }
-  const groupName = S.live.group === '__fav' ? 'Të preferuarat'
-    : S.live.group === '__sport' ? 'Sport'
-      : S.live.group === '__shqip' ? 'Shqip'
-        : S.live.group || 'Pa kategori';
   view.innerHTML = `
-    <div class="sec-head live-group-head">
-      <button class="btn ghost small" data-lback>‹ Grupet</button>
-      <div><h1>${esc(groupName)}</h1><span class="sub">${filteredChannels().length} kanale</span></div>
-    </div>
-    <div class="live-grid">
-      <aside class="ch-panel" aria-label="Lista e kanaleve">
+    <div class="lv">
+      <nav class="lv-col lv-groups" id="lv-groups" aria-label="Grupet e kanaleve"></nav>
+      <aside class="lv-col lv-chs" aria-label="Lista e kanaleve">
         <label class="search">${icon('search', 18)}<span class="sr">Kërko kanal</span>
           <input type="search" id="live-q" placeholder="Kërko kanal…" value="${esc(S.live.q)}"></label>
         <div class="ch-list" id="ch-list"></div>
       </aside>
-      <section class="player-col" aria-label="Luajtësi">
+      <section class="lv-player" aria-label="Luajtësi">
         <div class="player">
           <video id="live-video" controls playsinline></video>
           <span class="badge-live">● LIVE</span>
@@ -273,6 +257,7 @@ function live() {
         <div class="mini-epg" id="live-epg"></div>
       </section>
     </div>`;
+  renderGroupList();
   renderChannelList();
   const sel = chs.find((c) => c.id === S.live.sel);
   if (sel) playChannel(sel); else renderLiveInfo();
@@ -316,6 +301,7 @@ function renderLiveInfo() {
     <div class="toolbar">
       <button class="btn ghost small" data-fav="${esc(ch.id)}">${isFav(ch.id) ? '★ Hiq nga të preferuarat' : '☆ Shto te të preferuarat'}</button>
       <button class="btn ghost small" data-act="fullscreen">Ekran i plotë</button>
+      <button class="btn ghost small" data-act="live-search">Kërko</button>
     </div>`;
   const now = Date.now();
   const upcoming = nn.list.filter((p) => p.stop > now).slice(0, 6);
@@ -489,7 +475,7 @@ function setup() {
             <button class="btn accent big" type="submit" ${S.loading ? 'disabled' : ''}>${S.loading ? 'Duke u lidhur…' : (pl ? 'Ruaj ndryshimet' : 'Lidhu')}</button>
             ${!first ? `<a class="btn ghost" href="#/listat" data-act="cancel-edit">Anulo</a>` : ''}
           </form>
-          <p class="hint">NEXORA Player është vetëm luajtës – nuk ofron kanale. Të dhënat ruhen vetëm në këtë pajisje.</p>
+          <p class="hint">NEXORA është vetëm luajtës – nuk ofron kanale. Të dhënat ruhen vetëm në këtë pajisje.</p>
         </div>
       </section>
     </div>`;
@@ -548,8 +534,8 @@ function lists() {
 function legal() {
   view.innerHTML = `<article class="legal">
     <h1>Kushtet, Privatësia &amp; Impressum</h1>
-    <h2>Çfarë është NEXORA Player</h2>
-    <p>NEXORA Player është një luajtës mediash (softuer). Ai <strong>nuk ofron, nuk shet, nuk transmeton dhe nuk ruan</strong> asnjë kanal televiziv, film, serial apo përmbajtje tjetër. Aplikacioni nuk përmban asnjë listë kanalesh të parainstaluar.</p>
+    <h2>Çfarë është NEXORA</h2>
+    <p>NEXORA është një luajtës mediash (softuer). Ai <strong>nuk ofron, nuk shet, nuk transmeton dhe nuk ruan</strong> asnjë kanal televiziv, film, serial apo përmbajtje tjetër. Aplikacioni nuk përmban asnjë listë kanalesh të parainstaluar.</p>
     <h2>Përgjegjësia e përdoruesit</h2>
     <ul>
       <li>Ti shton vetë listën tënde (M3U, Xtream Codes ose API Token) nga ofruesi yt, direkt në program.</li>
@@ -579,26 +565,17 @@ view.addEventListener('click', (e) => {
     const ch = S.data && S.data.live.find((c) => c.id === d.ch);
     if (!ch) return;
     if (route() === 'live') playChannel(ch);
-    else { S.live.group = ''; S.live.sel = ch.id; S.live.page = 'channels'; location.hash = '#/live'; }
+    else { S.live.group = ''; S.live.sel = ch.id; location.hash = '#/live'; }
   } else if (d.go !== undefined) {
     if (d.filter !== undefined) { S.live.group = d.filter; S.live.q = ''; }
-    if (d.go === 'live') S.live.page = d.filter ? 'channels' : 'groups';
-    location.hash = '#/' + d.go;
+        location.hash = '#/' + d.go;
     if (d.go === 'live' && route() === 'live') live();
   } else if (d.lgroup !== undefined) {
-    Player.stop($('#live-video'));
     S.live.group = d.lgroup;
     S.live.q = '';
-    S.live.sel = null;
-    S.live.page = 'channels';
-    live();
-  } else if (d.lback !== undefined) {
-    Player.stop($('#live-video'));
-    S.live.group = '';
-    S.live.q = '';
-    S.live.sel = null;
-    S.live.page = 'groups';
-    live();
+    const q = $('#live-q'); if (q) q.value = '';
+    renderGroupList();
+    renderChannelList();
   } else if (d.ggroup !== undefined) {
     S.guide.group = d.ggroup; guide();
   } else if (d.fav !== undefined) {
@@ -626,6 +603,8 @@ view.addEventListener('click', (e) => {
     S.editId = null; S.formErr = ''; S.draft = null;
   } else if (d.act === 'reload') {
     loadActive();
+  } else if (d.act === 'live-search') {
+    const q = $('#live-q'); if (q) { q.focus(); q.select(); }
   } else if (d.act === 'fullscreen') {
     const v = $('#live-video');
     if (v && v.requestFullscreen) v.requestFullscreen().catch(() => {});
@@ -634,14 +613,8 @@ view.addEventListener('click', (e) => {
 
 document.addEventListener('click', (e) => {
   if (!e.target.closest('a[data-nav="live"]')) return;
-  S.live.group = '';
   S.live.q = '';
-  S.live.sel = null;
-  S.live.page = 'groups';
-  if (route() === 'live') {
-    Player.stop($('#live-video'));
-    live();
-  }
+  if (route() === 'live') live();
 });
 
 view.addEventListener('input', (e) => {

@@ -1,4 +1,4 @@
-// NEXORA Player – programi për Windows / macOS (Electron)
+// NEXORA – programi për Windows / macOS (Electron)
 // Në program nuk ka kufizime CORS dhe luhen edhe transmetimet http://.
 const { app, BrowserWindow, protocol, net, shell, Menu, session } = require('electron');
 const path = require('path');
@@ -9,6 +9,9 @@ const ROOT = path.join(__dirname, '..', 'www');
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true } },
 ]);
+
+// Emri u ndryshua në "NEXORA" – listat e ruajtura mbeten te dosja e vjetër
+app.setPath('userData', path.join(app.getPath('appData'), 'NEXORA Player'));
 
 if (!app.requestSingleInstanceLock()) app.quit();
 
@@ -43,7 +46,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 600,
     backgroundColor: '#0B0B0D',
-    title: 'NEXORA Player',
+    title: 'NEXORA',
     icon: path.join(__dirname, '..', 'build', 'installer-icon.ico'),
     autoHideMenuBar: true,
     show: false,
