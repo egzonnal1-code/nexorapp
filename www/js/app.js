@@ -304,8 +304,8 @@ function live() {
         <div class="ch-list" id="ch-list"></div>
       </aside>
       <section class="lv-player" aria-label="Luajtësi">
-        <div class="player">
-          <video id="live-video" controls playsinline poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video><div class="player-spin" hidden></div>
+        <div class="player" id="live-player" tabindex="0" role="button" aria-label="Ekran i plotë">
+          <video id="live-video" playsinline poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video><div class="player-spin" hidden></div>
           <span class="badge-live">● LIVE</span>
           <div class="player-msg" id="player-msg">Zgjidh një kanal nga lista.</div>
           <div class="player-status" id="player-status" hidden></div>
@@ -606,6 +606,8 @@ function legal() {
 
 // ---------- Ngjarjet ----------
 view.addEventListener('click', (e) => {
+  // Klik mbi videon e Live TV: hap/mbyll ekranin e plotë
+  if (e.target.closest('#live-player') && !e.target.closest('button, a')) { toggleFull(); return; }
   const t = e.target.closest('button, a');
   if (!t) return;
   const d = t.dataset;
@@ -720,6 +722,7 @@ document.addEventListener('keydown', (e) => {
       return;
     }
   }
+  if ((e.key === 'Enter' || e.keyCode === 13) && document.activeElement && document.activeElement.id === 'live-player') { e.preventDefault(); toggleFull(true); return; }
   if (e.key === 'Escape' && !$('#overlay').hidden) closeOverlay();
   // Kanali +/- në telekomandë (Samsung 427/428, LG/Android PageUp/PageDown)
   const step = [427, 33].includes(e.keyCode) || e.key === 'ChannelUp' ? -1
