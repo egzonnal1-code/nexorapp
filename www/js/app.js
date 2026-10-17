@@ -635,6 +635,17 @@ $('#overlay').addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !$('#overlay').hidden) closeOverlay();
+  // Kanali +/- në telekomandë (Samsung 427/428, LG/Android PageUp/PageDown)
+  const step = [427, 33].includes(e.keyCode) || e.key === 'ChannelUp' ? -1
+    : [428, 34].includes(e.keyCode) || e.key === 'ChannelDown' ? 1 : 0;
+  if (step && route() === 'live' && S.data) {
+    const list = filteredChannels();
+    if (!list.length) return;
+    e.preventDefault();
+    const i = list.findIndex((c) => c.id === S.live.sel);
+    const next = list[(i + step + list.length) % list.length];
+    if (next) playChannel(next);
+  }
 });
 
 // Ora dhe rifreskimi i EPG çdo minutë

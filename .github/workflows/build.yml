@@ -103,9 +103,47 @@ jobs:
           name: NEXORA-Player-Android
           path: NEXORA-Player.apk
 
+  tv:
+    name: Smart TV (Samsung + LG)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Mjetet (esbuild, hls.js, mpegts.js, LG CLI)
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+        run: |
+          npm install --no-audit --no-fund --ignore-scripts
+          npm install --no-save --no-audit --no-fund esbuild@0.23.1 hls.js@1.5.13 mpegts.js@1.7.3 @webos-tools/cli
+      - name: Ndërto versionet për TV
+        run: node scripts/build-tv.mjs
+      - name: Kontroll i shpejtë (hapet faqja e parë?)
+        run: |
+          for p in tizen webos; do
+            DOM="$(timeout 60 google-chrome --headless=new --disable-gpu --no-sandbox --allow-file-access-from-files --virtual-time-budget=4000 --dump-dom "file://$PWD/build-tv/$p/index.html" 2>/dev/null || true)"
+            if echo "$DOM" | grep -q 'id="pl-form"'; then echo "✓ $p: aplikacioni u hap"; else echo "::error::$p: aplikacioni nuk u hap në shfletues"; echo "$DOM" | head -c 2000; exit 1; fi
+          done
+      - name: LG webOS (.ipk)
+        run: |
+          mkdir -p out
+          npx ares-package build-tv/webos -o out --no-minify
+          mv out/*.ipk out/NEXORA-LG-webOS.ipk
+      - name: Samsung Tizen (projekti për nënshkrim)
+        run: |
+          (cd build-tv/tizen && zip -qr ../../out/NEXORA-Samsung-Tizen.zip .)
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NEXORA-TV
+          path: |
+            out/NEXORA-LG-webOS.ipk
+            out/NEXORA-Samsung-Tizen.zip
+
   release:
     name: Publiko te GitHub Releases (latest)
-    needs: [windows, android]
+    needs: [windows, android, tv]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -118,6 +156,8 @@ jobs:
           mkdir -p release
           cp out/NEXORA-Player-Windows/*.exe release/NEXORA-Player-Setup.exe
           cp out/NEXORA-Player-Android/*.apk release/NEXORA-Player.apk
+          cp out/NEXORA-TV/NEXORA-LG-webOS.ipk release/
+          cp out/NEXORA-TV/NEXORA-Samsung-Tizen.zip release/
           ls -la release
       - uses: softprops/action-gh-release@v2
         with:
@@ -127,3 +167,5 @@ jobs:
           files: |
             release/NEXORA-Player-Setup.exe
             release/NEXORA-Player.apk
+            release/NEXORA-LG-webOS.ipk
+            release/NEXORA-Samsung-Tizen.zip

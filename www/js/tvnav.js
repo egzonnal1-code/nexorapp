@@ -1,5 +1,7 @@
 // NEXORA – navigim me telekomandë / tastierë (shigjetat) për Android TV dhe PC
 const DIRS = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+// TV-të e vjetra (Samsung/LG) dërgojnë vetëm keyCode
+const CODES = { 38: [0, -1], 40: [0, 1], 37: [-1, 0], 39: [1, 0] };
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 // I dukshëm dhe i fokusueshëm (jo display:none, visibility:hidden apo zero madhësi)
@@ -10,7 +12,7 @@ function visible(el) {
 }
 
 document.addEventListener('keydown', (e) => {
-  const dir = DIRS[e.key];
+  const dir = DIRS[e.key] || CODES[e.keyCode];
   if (!dir || e.altKey || e.ctrlKey || e.metaKey) return;
   const a = document.activeElement;
   // brenda fushave të tekstit shigjetat majtas/djathtas lëvizin kursorin
@@ -57,3 +59,33 @@ document.addEventListener('keydown', (e) => {
     window.scrollBy({ top: dir[1] * innerHeight * 0.6, behavior: 'smooth' });
   }
 });
+
+// ── Butoni "Back" i telekomandës: Samsung Tizen (10009), LG webOS (461) ──
+const BACK = [10009, 461];
+const isBack = (e) => BACK.includes(e.keyCode) || e.key === 'GoBack' || e.key === 'BrowserBack';
+
+document.addEventListener('keydown', (e) => {
+  if (!isBack(e)) return;
+  e.preventDefault();
+  const overlay = document.getElementById('overlay');
+  if (overlay && !overlay.hidden) { const c = document.getElementById('ov-close'); if (c) c.click(); return; }
+  const fs = document.fullscreenElement || document.webkitFullscreenElement;
+  if (fs) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+  const a = document.activeElement;
+  if (a && a.tagName === 'INPUT') { a.blur(); return; }
+  if (location.hash && location.hash !== '#/' && location.hash !== '#') { history.back(); return; }
+  // në faqen kryesore: dil nga aplikacioni
+  try {
+    if (window.tizen && tizen.application) tizen.application.getCurrentApplication().exit();
+    else window.close();
+  } catch (err) { /* asgjë */ }
+});
+
+// Samsung: regjistro butonat e medias që të vijnë te aplikacioni
+try {
+  if (window.tizen && tizen.tvinputdevice) {
+    ['MediaPlayPause', 'MediaPlay', 'MediaPause', 'MediaStop', 'ChannelUp', 'ChannelDown'].forEach((k) => {
+      try { tizen.tvinputdevice.registerKey(k); } catch (err) { /* nuk mbështetet */ }
+    });
+  }
+} catch (err) { /* jo Samsung */ }
