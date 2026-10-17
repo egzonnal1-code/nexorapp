@@ -2,7 +2,6 @@
 import { loadDb, saveDb } from './store.js';
 import { parseM3U } from './m3u.js';
 import * as Xtream from './xtream.js';
-import { loadToken } from './token.js';
 import { fetchText } from './net.js';
 import { Epg } from './epg.js';
 import * as Player from './player.js';
@@ -68,7 +67,7 @@ async function loadActive({ quiet = false, silent = false } = {}) {
   try {
     let data;
     if (pl.type === 'xtream') data = await Xtream.load(pl);
-    else if (pl.type === 'token') data = await loadToken(pl);
+    else if (pl.type === 'token') throw new Error('Lidhja me API Token nuk mbështetet më. Fshije këtë listë dhe shtoje si Xtream Codes ose M3U.');
     else if (Xtream.credsOf(pl)) data = await Xtream.load(Xtream.credsOf(pl));
     else { const { text } = await fetchText(pl.m3uUrl); data = parseM3U(text); }
     if (pl.epgUrl) data.epgUrl = pl.epgUrl;
@@ -422,7 +421,7 @@ async function openSeries(s) {
 }
 
 // ---------- Shto listën tënde (faqja e parë) ----------
-const TYPE_NAME = { m3u: 'M3U URL', xtream: 'Xtream Codes', token: 'API Token' };
+const TYPE_NAME = { m3u: 'M3U URL', xtream: 'Xtream Codes', token: 'API Token (jo më)' };
 
 function setup() {
   const pl = S.editId ? db.playlists.find((p) => p.id === S.editId) : null;
@@ -448,7 +447,7 @@ function setup() {
             <p>Zgjidh mënyrën e lidhjes me ofruesin tënd.</p>
           </div>
           <div class="seg" role="tablist" aria-label="Mënyra e lidhjes">
-            ${['xtream', 'm3u', 'token'].map((t) => `<button type="button" role="tab" aria-selected="${tab === t}" class="${tab === t ? 'on' : ''}" data-tab="${t}" ${pl ? 'disabled' : ''}>${TYPE_NAME[t]}</button>`).join('')}
+            ${['xtream', 'm3u'].map((t) => `<button type="button" role="tab" aria-selected="${tab === t}" class="${tab === t ? 'on' : ''}" data-tab="${t}" ${pl ? 'disabled' : ''}>${TYPE_NAME[t]}</button>`).join('')}
           </div>
           <form class="form" id="pl-form" autocomplete="off">
             <label class="field">Emri i listës<input name="name" required maxlength="60" placeholder="p.sh. Shtëpia" value="${v('name')}"></label>
@@ -460,14 +459,6 @@ function setup() {
               </div>` : ''}
             ${tab === 'm3u' ? `
               <label class="field">URL e listës M3U<input class="mono" name="m3uUrl" type="url" required placeholder="https://…/playlist.m3u" value="${v('m3uUrl')}"></label>` : ''}
-            ${tab === 'token' ? `
-              <label class="field">URL e API-së<input class="mono" name="apiUrl" type="url" required placeholder="https://api.ofruesi.com/playlist" value="${v('apiUrl')}"></label>
-              <label class="field">API Token<input class="mono" name="token" type="password" required autocomplete="new-password" placeholder="••••••••••••" value="${v('token')}"></label>
-              <label class="field">Si dërgohet tokeni
-                <select name="tokenMode">
-                  <option value="header" ${pl?.tokenMode !== 'query' ? 'selected' : ''}>Header: Authorization: Bearer &lt;token&gt;</option>
-                  <option value="query" ${pl?.tokenMode === 'query' ? 'selected' : ''}>Në URL: ?token=&lt;token&gt;</option>
-                </select></label>` : ''}
             <label class="field">URL e EPG – guida (opsionale)<input class="mono" name="epgUrl" type="url" placeholder="${tab === 'xtream' ? 'lëre bosh – merret nga serveri' : 'https://…/epg.xml.gz'}" value="${v('epgUrl')}"></label>
             <label class="check"><input type="checkbox" name="legal" required ${src ? 'checked' : ''}>
               <span>Konfirmoj që kjo listë është imja ose e ofruesit tim të licencuar dhe që kam të drejtë ligjore ta shikoj këtë përmbajtje. (<a href="#/ligjore" style="text-decoration:underline">Kushtet</a>)</span></label>
@@ -488,7 +479,6 @@ async function saveForm(form) {
   const pl = { id: old ? old.id : 'p' + Date.now(), type, name: (f.name || '').trim(), epgUrl: (f.epgUrl || '').trim() };
   if (type === 'm3u') pl.m3uUrl = f.m3uUrl.trim();
   if (type === 'xtream') Object.assign(pl, { server: f.server.trim(), user: f.user.trim(), pass: f.pass });
-  if (type === 'token') Object.assign(pl, { apiUrl: f.apiUrl.trim(), token: f.token.trim(), tokenMode: f.tokenMode });
 
   // Provo lidhjen para se ta ruash, që klienti ta dijë menjëherë nëse të dhënat janë gabim
   const prev = { playlists: db.playlists, activeId: db.activeId };
@@ -538,13 +528,13 @@ function legal() {
     <p>NEXORA është një luajtës mediash (softuer). Ai <strong>nuk ofron, nuk shet, nuk transmeton dhe nuk ruan</strong> asnjë kanal televiziv, film, serial apo përmbajtje tjetër. Aplikacioni nuk përmban asnjë listë kanalesh të parainstaluar.</p>
     <h2>Përgjegjësia e përdoruesit</h2>
     <ul>
-      <li>Ti shton vetë listën tënde (M3U, Xtream Codes ose API Token) nga ofruesi yt, direkt në program.</li>
+      <li>Ti shton vetë listën tënde (M3U ose Xtream Codes) nga ofruesi yt, direkt në program.</li>
       <li>Përdor vetëm lista dhe përmbajtje për të cilat ke të drejtë ligjore (p.sh. abonim te një ofrues i licencuar, kanale falas/FTA, lista të tuat).</li>
       <li>Shikimi ose shpërndarja e përmbajtjes pa licencë mund të shkelë ligjin për të drejtat e autorit (në Zvicër: URG). NEXORA nuk mban përgjegjësi për përmbajtjen që shton përdoruesi.</li>
     </ul>
     <h2>Privatësia</h2>
     <ul>
-      <li>Listat, të dhënat e hyrjes dhe tokenët ruhen <strong>vetëm lokalisht</strong> në pajisjen tënde. NEXORA nuk ka server me të dhënat e klientëve.</li>
+      <li>Listat dhe të dhënat e hyrjes ruhen <strong>vetëm lokalisht</strong> në pajisjen tënde. NEXORA nuk ka server me të dhënat e klientëve.</li>
       <li>Fshirja: te “Listat e mia” fshin çdo listë; ose çinstalo programin / pastro të dhënat e faqes.</li>
       <li>Kur serveri i ofruesit nuk lejon qasje direkte nga shfletuesi (CORS), lista/EPG mund të kalojë përmes një proxy teknik në Netlify. Proxy nuk ruan dhe nuk regjistron përmbajtje. Videoja nuk kalon kurrë përmes serverëve të NEXORA.</li>
       <li>Nuk përdorim cookies për reklama apo gjurmim.</li>

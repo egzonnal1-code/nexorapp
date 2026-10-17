@@ -2,7 +2,7 @@
   "id": "/",
   "name": "NEXORA",
   "short_name": "NEXORA",
-  "description": "Luajtës IPTV për listat e tua M3U, Xtream Codes dhe API Token, me EPG.",
+  "description": "Luajtës IPTV për listat e tua M3U dhe Xtream Codes, me EPG.",
   "start_url": "./#/",
   "scope": "./",
   "display": "standalone",

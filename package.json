@@ -1,7 +1,7 @@
 {
   "name": "nexora-player",
   "version": "1.0.0",
-  "description": "NEXORA – luajtës IPTV me EPG për listat e tua (M3U, Xtream Codes, API Token)",
+  "description": "NEXORA – luajtës IPTV me EPG për listat e tua (M3U, Xtream Codes)",
   "author": "NEXORA – Egzon Aliti",
   "homepage": "https://nexoraweb.ch",
   "license": "UNLICENSED",

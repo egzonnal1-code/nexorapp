@@ -1,8 +1,8 @@
 // NEXORA – Service Worker: ruan vetëm skedarët e aplikacionit (jo listat, jo video)
-const CACHE = 'nexora-shell-v4';
+const CACHE = 'nexora-shell-v5';
 const SHELL = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
-  './js/app.js', './js/m3u.js', './js/xtream.js', './js/token.js', './js/epg.js',
+  './js/app.js', './js/m3u.js', './js/xtream.js', './js/epg.js',
   './js/player.js', './js/net.js', './js/store.js', './js/tvnav.js', './js/i18n.js',
   './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png',
 ];

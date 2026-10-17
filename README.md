@@ -16,7 +16,7 @@ Setup-in për Windows dhe APK-në për Android **i ndërton GitHub automatikisht
 ## Si funksionon
 
 1. Klienti instalon programin.
-2. **Faqja e parë** është **“Shto listën tënde”**: zgjedh **Xtream Codes**, **M3U URL** ose **API Token**, shkruan të dhënat dhe klikon **Lidhu**.
+2. **Faqja e parë** është **“Shto listën tënde”**: zgjedh **Xtream Codes** ose **M3U URL**, shkruan të dhënat dhe klikon **Lidhu**.
 3. Programi e provon lidhjen menjëherë. Nëse të dhënat janë gabim, shfaq gabimin dhe nuk e ruan listën.
 4. Pas lidhjes hapen **Ballina → Live TV → Guida → Filma → Seriale**.
 5. Te ⚙ (**Listat e mia**) mund të shtosh lista të tjera, t’i ndryshosh ose t’i fshish.
@@ -79,7 +79,7 @@ Apple nuk lejon instalim APK/EXE. Ka dy rrugë:
 
 | | Windows (.exe) | Android (.apk) | Web / iPhone |
 |---|---|---|---|
-| Lista M3U / Xtream / API Token | ✅ | ✅ | ✅ |
+| Lista M3U / Xtream | ✅ | ✅ | ✅ |
 | EPG | ✅ | ✅ | ✅ (EPG e madhe kalon nga proxy vetëm deri në 5.5 MB) |
 | Transmetime `http://` | ✅ | ✅ | ❌ vetëm `https://` |
 | Serverë pa CORS | ✅ | ✅ | ✅ përmes proxy-t në Netlify |
@@ -109,20 +109,6 @@ assets/                  – ikona dhe splash për Android/iOS
 build/icon.png           – ikona e setup-it për Windows
 netlify/functions/       – proxy vetëm për tekst (web)
 .github/workflows/       – ndërtimi automatik i .exe dhe .apk
-```
-
-## API Token – formati
-
-`GET <URL e API-së>` me `Authorization: Bearer <TOKEN>` (ose `?token=<TOKEN>`).
-Serveri kthen një listë M3U, ose JSON:
-
-```json
-{
-  "epg_url": "https://ofruesi.com/epg.xml.gz",
-  "channels": [{ "id": 1, "name": "Kanali", "group": "Shqip", "logo": "https://…", "epg_id": "kanali.al", "url": "https://…/index.m3u8" }],
-  "movies":   [{ "id": 10, "name": "Filmi", "group": "Aksion", "logo": "https://…", "url": "https://…/10.mp4" }],
-  "series":   [{ "id": 20, "name": "Seriali", "logo": "https://…", "seasons": [{ "season": 1, "episodes": [{ "title": "Episodi 1", "url": "https://…/201.mp4" }] }] }]
-}
 ```
 
 ## Ligjore
