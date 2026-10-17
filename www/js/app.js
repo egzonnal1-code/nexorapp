@@ -431,15 +431,6 @@ function setup() {
   const first = !db.playlists.some((p) => !S.draft || p.id !== S.draft.id);
   view.innerHTML = `
     <div class="setup">
-      <section class="setup-brand" aria-label="NEXORA">
-        <svg viewBox="-6 -8 754 116" class="setup-logo" role="img" aria-label="NEXORA"><g fill="none" stroke="currentColor" stroke-width="10" stroke-miterlimit="1"><polyline points="5,100 5,6 71,94 71,0"/><path d="M140 5H200M140 50H200M140 95H200"/><path d="M260 0L326 100M326 0L260 100"/><circle cx="434" cy="50" r="45"/><path d="M549 100V5H585A26.5 26.5 0 0 1 585 58H549M581 58L616 100"/><polyline points="674,100 708,3 742,100"/></g></svg>
-        <div class="setup-claim">
-          <h1>Të gjitha kanalet.<br>Një vend.</h1>
-          <p>Lidh listën tënde TV dhe shiko Live TV, filma dhe seriale në çdo pajisje.</p>
-        </div>
-        <p class="setup-dev">Windows · Android · Android TV · iPhone · Web</p>
-      </section>
-
       <section class="setup-form" aria-labelledby="h-add">
         <div class="setup-inner">
           <div class="setup-head">
