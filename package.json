@@ -55,6 +55,9 @@
       "category": "public.app-category.entertainment"
     }
   },
+  "dependencies": {
+    "@capacitor/app": "^6.0.0"
+  },
   "devDependencies": {
     "@capacitor/android": "6.2.0",
     "@capacitor/assets": "3.0.5",

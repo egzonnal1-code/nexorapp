@@ -12,6 +12,7 @@ function visible(el) {
 }
 
 document.addEventListener('keydown', (e) => {
+  if (document.body.classList.contains('tvfull')) return; // në ekran të plotë shigjetat ndërrojnë kanalin
   const dir = DIRS[e.key] || CODES[e.keyCode];
   if (!dir || e.altKey || e.ctrlKey || e.metaKey) return;
   const a = document.activeElement;
@@ -60,26 +61,81 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ── Butoni "Back" i telekomandës: Samsung Tizen (10009), LG webOS (461) ──
+// ── Butoni "Back": një hap mbrapa brenda app-it, jo dalje ──
+// Android TV / telefon (Capacitor), Samsung Tizen (10009), LG webOS (461), Escape në PC
 const BACK = [10009, 461];
 const isBack = (e) => BACK.includes(e.keyCode) || e.key === 'GoBack' || e.key === 'BrowserBack';
+let exitArmed = 0;
 
-document.addEventListener('keydown', (e) => {
-  if (!isBack(e)) return;
-  e.preventDefault();
+function toast(msg) {
+  let t = document.getElementById('nx-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'nx-toast';
+    t.className = 'nx-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.hidden = true; }, 2500);
+}
+
+function exitApp() {
+  try {
+    const cap = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if (cap && cap.exitApp) { cap.exitApp(); return; }
+    if (window.tizen && tizen.application) { tizen.application.getCurrentApplication().exit(); return; }
+    window.close();
+  } catch (err) { /* asgjë */ }
+}
+
+export function goBack() {
+  const body = document.body;
+  // 1) ekrani i plotë i kanalit
+  if (body.classList.contains('tvfull')) {
+    body.classList.remove('tvfull');
+    const on = document.querySelector('.ch.on'); if (on) on.focus();
+    return;
+  }
+  // 2) dritarja e filmit/serialit
   const overlay = document.getElementById('overlay');
   if (overlay && !overlay.hidden) { const c = document.getElementById('ov-close'); if (c) c.click(); return; }
   const fs = document.fullscreenElement || document.webkitFullscreenElement;
   if (fs) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+  // 3) fusha e tekstit
   const a = document.activeElement;
-  if (a && a.tagName === 'INPUT') { a.blur(); return; }
-  if (location.hash && location.hash !== '#/' && location.hash !== '#') { history.back(); return; }
-  // në faqen kryesore: dil nga aplikacioni
-  try {
-    if (window.tizen && tizen.application) tizen.application.getCurrentApplication().exit();
-    else window.close();
-  } catch (err) { /* asgjë */ }
+  if (a && (a.tagName === 'INPUT' || a.tagName === 'SELECT')) { a.blur(); return; }
+  const route = location.hash.replace(/^#\/?/, '');
+  // 4) Live TV: nga kanalet / player-i kthehu te grupet, nga grupet te kryefaqja
+  if (route === 'live') {
+    const inGroups = a && a.closest && a.closest('#lv-groups');
+    if (!inGroups) {
+      const g = document.querySelector('.lv-g.on') || document.querySelector('.lv-g');
+      if (g) { g.focus(); g.scrollIntoView({ block: 'nearest' }); return; }
+    }
+    location.hash = '#/';
+    return;
+  }
+  // 5) çdo faqe tjetër: kthehu te kryefaqja
+  if (route && route !== '' && !body.classList.contains('locked')) { location.hash = '#/'; return; }
+  // 6) kryefaqja: shtyp Back dy herë për të dalë
+  if (Date.now() - exitArmed < 2500) { exitApp(); return; }
+  exitArmed = Date.now();
+  toast('Shtyp Back edhe një herë për të dalë');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!isBack(e)) return;
+  e.preventDefault();
+  goBack();
 });
+
+// Android (Capacitor): butoni Back i telekomandës/telefonit vjen këtu, jo te sistemi
+try {
+  const capApp = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if (capApp && capApp.addListener) capApp.addListener('backButton', () => goBack());
+} catch (err) { /* jo Android */ }
 
 // Samsung: regjistro butonat e medias që të vijnë te aplikacioni
 try {

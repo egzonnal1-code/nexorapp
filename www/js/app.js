@@ -191,11 +191,11 @@ function home() {
   view.innerHTML = `
     ${heroHtml ? `<section class="hero" aria-label="Të veçuara">${heroHtml}</section>` : ''}
     <section class="cats" aria-label="Kategoritë">
-      <button class="cat" data-go="live" data-filter="">${icon('tv')}<span>LIVE TV</span></button>
-      <button class="cat" data-go="live" data-filter="__sport">${icon('ball')}<span>SPORT</span></button>
-      <button class="cat" data-go="filma">${icon('film')}<span>FILMA</span></button>
-      <button class="cat" data-go="seriale">${icon('series')}<span>SERIALE</span></button>
-      <button class="cat" data-go="live" data-filter="__shqip">${icon('star')}<span>SHQIP</span></button>
+      <button class="cat cat-live" data-go="live" data-filter="">${icon('tv')}<span>LIVE TV</span></button>
+      <button class="cat cat-sport" data-go="live" data-filter="__sport">${icon('ball')}<span>SPORT</span></button>
+      <button class="cat cat-film" data-go="filma">${icon('film')}<span>FILMA</span></button>
+      <button class="cat cat-series" data-go="seriale">${icon('series')}<span>SERIALE</span></button>
+      <button class="cat cat-sq" data-go="live" data-filter="__shqip">${icon('star')}<span>SHQIP</span></button>
     </section>
     ${top.length ? `<section class="sec" aria-labelledby="h-now">
       <div class="sec-head"><h2 id="h-now">Live tani</h2><a href="#/live">Të gjitha (${live.length})</a></div>
@@ -559,7 +559,7 @@ view.addEventListener('click', (e) => {
   if (d.ch !== undefined) {
     const ch = S.data && S.data.live.find((c) => c.id === d.ch);
     if (!ch) return;
-    if (route() === 'live') playChannel(ch);
+    if (route() === 'live') { if (S.live.sel === ch.id) toggleFull(true); else playChannel(ch); }
     else { S.live.group = ''; S.live.sel = ch.id; location.hash = '#/live'; }
   } else if (d.go !== undefined) {
     if (d.filter !== undefined) { S.live.group = d.filter; S.live.q = ''; }
@@ -603,8 +603,7 @@ view.addEventListener('click', (e) => {
   } else if (d.act === 'live-search') {
     const q = $('#live-q'); if (q) { q.focus(); q.select(); }
   } else if (d.act === 'fullscreen') {
-    const v = $('#live-video');
-    if (v && v.requestFullscreen) v.requestFullscreen().catch(() => {});
+    toggleFull(true);
   }
 });
 
@@ -640,7 +639,32 @@ $('#overlay').addEventListener('click', (e) => {
   const ep = e.target.closest('[data-ep]');
   if (ep) playInOverlay(ep.dataset.title, ep.dataset.ep);
 });
+// Ekran i plotë (punon njësoj në TV, telefon dhe PC)
+function toggleFull(on) {
+  const isOn = document.body.classList.contains('tvfull');
+  const want = on === undefined ? !isOn : on;
+  if (want && !$('#live-video')) return;
+  document.body.classList.toggle('tvfull', want);
+  if (!want) {
+    const btn = document.querySelector(`.ch[data-ch="${CSS.escape(S.live.sel || '')}"]`);
+    if (btn) btn.focus();
+  }
+}
+window.addEventListener('hashchange', () => toggleFull(false));
+
 document.addEventListener('keydown', (e) => {
+  if (document.body.classList.contains('tvfull')) {
+    const k = e.key || '';
+    if (k === 'Escape' || k === 'Enter' || e.keyCode === 13) { e.preventDefault(); toggleFull(false); return; }
+    if (k === 'ArrowUp' || e.keyCode === 38 || k === 'ArrowDown' || e.keyCode === 40) {
+      e.preventDefault();
+      const list = filteredChannels();
+      const i = list.findIndex((c) => c.id === S.live.sel);
+      const next = list[(i + (k === 'ArrowUp' || e.keyCode === 38 ? -1 : 1) + list.length) % list.length];
+      if (next) playChannel(next);
+      return;
+    }
+  }
   if (e.key === 'Escape' && !$('#overlay').hidden) closeOverlay();
   // Kanali +/- në telekomandë (Samsung 427/428, LG/Android PageUp/PageDown)
   const step = [427, 33].includes(e.keyCode) || e.key === 'ChannelUp' ? -1

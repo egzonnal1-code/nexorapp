@@ -324,3 +324,46 @@ body.locked .foot { display: none; }
 .player-status { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 8px 16px; border-radius: 999px; background: rgba(11,11,13,.85); border: 1px solid var(--line-2); color: var(--text); font-size: 14px; text-align: center; pointer-events: none; }
 .seg.seg-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .seg.seg-3 button { padding: 0 8px; font-size: 14px; }
+
+/* ── Kryefaqja si në dizajn: një rresht i madh + 5 kategori, në një ekran ── */
+@media (min-width: 801px) {
+  .top { flex-wrap: nowrap; }
+  .hero { grid-template-columns: 2.2fr 1fr 1fr 1fr; height: min(46vh, 460px); }
+  .hero .tile { min-height: 0; height: 100%; }
+  .hero .tile.big { grid-column: auto; }
+  .cats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .cat { height: min(20vh, 170px); }
+}
+.cat { border: 0; color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); transition: transform .15s, box-shadow .15s; }
+.cat svg { width: 44px; height: 44px; }
+.cat-live { background: linear-gradient(145deg, #2E6BFF, #102A73); }
+.cat-sport { background: linear-gradient(145deg, #1FA855, #0B4A26); }
+.cat-film { background: linear-gradient(145deg, #FF6A2B, #8A2A0B); }
+.cat-series { background: linear-gradient(145deg, #8B4DFF, #3A1785); }
+.cat-sq { background: linear-gradient(145deg, #E5313B, #7A0F16); }
+.cat:hover, .cat:focus-visible { color: #fff; transform: scale(1.04); box-shadow: 0 0 0 3px #fff, 0 14px 40px rgba(0,0,0,.5); }
+.cat-live:hover, .cat-live:focus-visible { background: linear-gradient(145deg, #2E6BFF, #102A73); }
+.cat-sport:hover, .cat-sport:focus-visible { background: linear-gradient(145deg, #1FA855, #0B4A26); }
+.cat-film:hover, .cat-film:focus-visible { background: linear-gradient(145deg, #FF6A2B, #8A2A0B); }
+.cat-series:hover, .cat-series:focus-visible { background: linear-gradient(145deg, #8B4DFF, #3A1785); }
+.cat-sq:hover, .cat-sq:focus-visible { background: linear-gradient(145deg, #E5313B, #7A0F16); }
+.hero .tile:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+@media (min-width: 801px) and (max-height: 760px) {
+  .view { gap: 16px; }
+  .hero { height: 50vh; gap: 12px; }
+  .hero .tile { padding: 16px; }
+  .tile.big .t-title { font-size: 28px; }
+  .cats { gap: 12px; }
+  .cat { height: 22vh; gap: 8px; }
+  .cat span { font-size: 17px; }
+  .cat svg { width: 34px; height: 34px; }
+}
+
+/* ── Ekran i plotë për kanalin (klik i dytë / butoni) ── */
+body.tvfull .lv-player .player { position: fixed; inset: 0; z-index: 90; border-radius: 0; border: 0; aspect-ratio: auto; width: 100vw; height: 100vh; }
+body.tvfull .lv-player .player video { object-fit: contain; }
+body.tvfull { overflow: hidden; }
+
+.nx-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 200; padding: 12px 22px; border-radius: 999px; background: rgba(20,20,23,.95); border: 1px solid var(--line-2); color: var(--text); font-size: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.hero .tile > img.cover { opacity: 1; }
+.clock { white-space: nowrap; }
