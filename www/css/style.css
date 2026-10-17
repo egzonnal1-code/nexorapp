@@ -367,3 +367,4 @@ body.tvfull { overflow: hidden; }
 .nx-toast { position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 200; padding: 12px 22px; border-radius: 999px; background: rgba(20,20,23,.95); border: 1px solid var(--line-2); color: var(--text); font-size: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
 .hero .tile > img.cover { opacity: 1; }
 .clock { white-space: nowrap; }
+.top-right { flex: none; }

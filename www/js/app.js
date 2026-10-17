@@ -199,16 +199,7 @@ function home() {
       <button class="cat cat-film" data-go="filma">${icon('film')}<span>FILMA</span></button>
       <button class="cat cat-series" data-go="seriale">${icon('series')}<span>SERIALE</span></button>
       <button class="cat cat-sq" data-go="live" data-filter="__shqip">${icon('star')}<span>SHQIP</span></button>
-    </section>
-    ${top.length ? `<section class="sec" aria-labelledby="h-now">
-      <div class="sec-head"><h2 id="h-now">Live tani</h2><a href="#/live">Të gjitha (${live.length})</a></div>
-      <div class="now-grid">${top.map((c) => {
-        const nn = S.epg.nowNext(c);
-        return `<button class="now-card" data-ch="${esc(c.id)}">${chLogo(c)}
-          <span class="txt"><span class="ell">${esc(c.name)}</span>
-          <span class="sub ell">${esc(nn.cur ? nn.cur.title : c.group)}</span>
-          ${nn.cur ? `<span class="bar"><i style="width:${nn.pct}%"></i></span>` : ''}</span></button>`;
-      }).join('')}</div></section>` : ''}`;
+    </section>`;
 }
 
 // ---------- Live TV ----------
