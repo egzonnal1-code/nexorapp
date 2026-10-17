@@ -450,7 +450,7 @@ function setup() {
               </div>` : ''}
             ${tab === 'm3u' ? `
               <label class="field">URL e listës M3U<input class="mono" name="m3uUrl" type="url" required placeholder="https://…/playlist.m3u" value="${v('m3uUrl')}"></label>` : ''}
-            <label class="field">URL e EPG – guida (opsionale)<input class="mono" name="epgUrl" type="url" placeholder="${tab === 'xtream' ? 'lëre bosh – merret nga serveri' : 'https://…/epg.xml.gz'}" value="${v('epgUrl')}"></label>
+            ${tab === 'm3u' ? `<label class="field">URL e EPG – guida (opsionale)<input class="mono" name="epgUrl" type="url" placeholder="https://…/epg.xml.gz" value="${v('epgUrl')}"></label>` : ''}
             <label class="check"><input type="checkbox" name="legal" required ${src ? 'checked' : ''}>
               <span>Konfirmoj që kjo listë është imja ose e ofruesit tim të licencuar dhe që kam të drejtë ligjore ta shikoj këtë përmbajtje. (<a href="#/ligjore" style="text-decoration:underline">Kushtet</a>)</span></label>
             ${S.formErr ? `<div class="err-box" role="alert">${esc(S.formErr)}</div>` : ''}
