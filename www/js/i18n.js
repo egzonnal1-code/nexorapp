@@ -4,6 +4,8 @@ const ORIGINAL_TEXT = new WeakMap();
 const ORIGINAL_ATTR = new WeakMap();
 
 const MESSAGES = {
+  '☆ Të preferuarat': ['☆ Favoriten', '☆ Favorites'],
+  '★ Hiq': ['★ Entfernen', '★ Remove'],
   'Luajtja': ['Wiedergabe', 'Playback'],
   'Buffer-i (sa video ngarkohet përpara)': ['Puffer (wie viel Video vorgeladen wird)', 'Buffer (how much video is loaded ahead)'],
   'I vogël – fillon shpejt': ['Klein – startet schnell', 'Small – starts fast'],

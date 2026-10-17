@@ -270,11 +270,9 @@ function renderChannelList() {
   const list = filteredChannels();
   if (!list.length) { box.innerHTML = '<div class="more">Asnjë kanal në këtë kategori.</div>'; return; }
   box.innerHTML = list.slice(0, LIMIT).map((c) => {
-    const nn = S.epg.nowNext(c);
     return `<button class="ch ${S.live.sel === c.id ? 'on' : ''}" data-ch="${esc(c.id)}">
       <span class="n">${esc(c.num)}</span>${chLogo(c)}
-      <span class="txt"><span class="ell">${esc(c.name)}${isFav(c.id) ? ' <span class="fav">★</span>' : ''}</span>
-      <span class="sub ell">${esc(nn.cur ? nn.cur.title : c.group)}</span></span></button>`;
+      <span class="txt"><span class="ell">${esc(c.name)}${isFav(c.id) ? ' <span class="fav">★</span>' : ''}</span></span></button>`;
   }).join('') + (list.length > LIMIT ? `<div class="more">+ ${list.length - LIMIT} kanale të tjera – përdor kërkimin.</div>` : '');
 }
 
@@ -286,14 +284,12 @@ function renderLiveInfo() {
   if (!ch) { info.innerHTML = ''; box.innerHTML = ''; box.hidden = true; return; }
   const nn = S.epg.nowNext(ch);
   info.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
-      <span class="sub"><span class="mono">${esc(ch.num)}</span> · ${esc(ch.name)} · ${esc(ch.group)}</span>
-      <h1>${esc(nn.cur ? nn.cur.title : ch.name)}</h1>
-      ${nn.cur ? `<span class="sub mono">${hhmm(nn.cur.start)} – ${hhmm(nn.cur.stop)}</span><span class="bar" style="max-width:420px"><i style="width:${nn.pct}%"></i></span>` : '<span class="sub">Nuk ka të dhëna EPG për këtë kanal.</span>'}
-      ${nn.next ? `<span class="sub">Në vazhdim: ${hhmm(nn.next.start)} ${esc(nn.next.title)}</span>` : ''}
+    <div class="lv-title">
+      <h1 class="ell">${esc(nn.cur ? `${ch.name} – ${nn.cur.title}` : ch.name)}</h1>
+      ${nn.cur ? `<span class="sub mono">${hhmm(nn.cur.start)} – ${hhmm(nn.cur.stop)}${nn.next ? ` · → ${hhmm(nn.next.start)} ${esc(nn.next.title)}` : ''}</span>` : ''}
     </div>
     <div class="toolbar">
-      <button class="btn ghost small" data-fav="${esc(ch.id)}">${isFav(ch.id) ? '★ Hiq nga të preferuarat' : '☆ Shto te të preferuarat'}</button>
+      <button class="btn ghost small" data-fav="${esc(ch.id)}">${isFav(ch.id) ? '★ Hiq' : '☆ Të preferuarat'}</button>
       <button class="btn ghost small" data-act="fullscreen">Ekran i plotë</button>
       <button class="btn ghost small" data-act="live-search">Kërko</button>
     </div>`;

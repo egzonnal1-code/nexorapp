@@ -368,3 +368,55 @@ body.tvfull { overflow: hidden; }
 .hero .tile > img.cover { opacity: 1; }
 .clock { white-space: nowrap; }
 .top-right { flex: none; }
+
+/* ── Live TV kompakt (si player-at klasikë IPTV) ── */
+.lv { gap: 10px; }
+.lv-col { padding: 6px; border-radius: 14px; }
+.lv-groups { gap: 0; }
+.lv-g { min-height: 40px; padding: 6px 12px; font-size: 14px; border-radius: 8px; border-bottom: 1px solid var(--line); }
+.lv-g .cnt { font-size: 12px; }
+.lv-chs { gap: 6px; }
+.lv-chs .search { height: 40px; }
+.lv-chs .search input { font-size: 14px; }
+.lv-chs .ch-list { gap: 0; }
+.lv-chs .ch { min-height: 42px; padding: 4px 8px; gap: 10px; border-radius: 8px; border-bottom: 1px solid var(--line); }
+.lv-chs .ch .n { width: 30px; font-size: 12px; }
+.lv-chs .ch .logo-box { width: 30px; height: 30px; border-radius: 6px; font-size: 9px; }
+.lv-chs .ch .txt .ell { font-size: 14px; }
+.lv-chs .ch.on { box-shadow: none; background: rgba(255, 90, 31, .14); }
+.lv-chs .ch.on .ell { color: var(--accent); }
+.lv-player { gap: 10px; }
+.lv-player .player { border-radius: 14px; }
+.lv-player .live-info { flex-direction: column; align-items: stretch; gap: 10px; }
+.lv-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lv-title h1 { font-size: 18px; font-weight: 600; line-height: 1.25; }
+.lv-title .sub { font-size: 12px; }
+.lv-player .toolbar { justify-content: flex-end; gap: 8px; }
+.lv-player .toolbar .btn.small { min-height: 34px; padding: 0 14px; font-size: 13px; }
+.lv-player .mini-epg { display: none; }
+@media (min-width: 801px) {
+  .lv { grid-template-columns: minmax(180px, 240px) minmax(220px, 300px) minmax(0, 1fr); }
+  .lv-player { height: calc(100vh - 150px); }
+  .lv-player .live-info { flex: 1; justify-content: space-between; }
+}
+@media (min-width: 801px) and (max-height: 760px) {
+  .lv { grid-template-columns: 180px 230px minmax(0, 1fr); gap: 8px; }
+  .lv-player { height: calc(100vh - 140px); }
+  .lv-g { min-height: 34px; font-size: 13px; padding: 4px 10px; }
+  .lv-chs .ch { min-height: 36px; }
+  .lv-chs .ch .logo-box { width: 26px; height: 26px; }
+  .lv-chs .ch .txt .ell { font-size: 13px; }
+  .lv-chs .search { height: 34px; }
+  .lv-title h1 { font-size: 15px; }
+}
+@media (min-width: 801px) {
+  .tabs { flex-wrap: nowrap; white-space: nowrap; min-width: 0; }
+}
+@media (min-width: 801px) and (max-height: 760px) {
+  .top { gap: 12px 24px; }
+  .tabs { gap: 4px 20px; }
+  .tabs a { font-size: 16px; }
+}
+@media (min-width: 801px) and (min-height: 761px) {
+  .lv-col, .lv-player { height: calc(100vh - 205px); }
+}
