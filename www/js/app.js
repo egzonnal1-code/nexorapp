@@ -200,9 +200,13 @@ function chLogo(ch) {
   return `<span class="logo-box">${src ? `<img src="${src}" alt="" loading="lazy" onerror="this.remove()">` : ''}${src ? '' : initials(ch.name)}</span>`;
 }
 
+// Grupet e sportit (sipas emrit të grupit nga ofruesi)
+const SPORT_RE = /sport|futboll|football|soccer|uefa|champions|europa\s*league|conference|league|liga|ligue|serie\s*a|bundesliga|premier|eredivisie|primeira|super\s*lig|nba|nfl|nhl|mlb|ufc|mma|boxing|tennis|golf|formula|\bf1\b|motogp|racing|dazn|bein|eurosport|arena|ppv|events?\b/i;
+const isSportGroup = (g) => SPORT_RE.test(g || '');
+
 function liveFilter(list, key) {
   if (key === '__fav') return list.filter((c) => isFav(c.id));
-  if (key === '__sport') return list.filter((c) => /sport/i.test(c.group + ' ' + c.name));
+  if (key === '__sport') return list.filter((c) => isSportGroup(c.group));
   if (key === '__shqip') return list.filter((c) => /\b(al|alb|shqip|albania|kosov[eoa]|ks)\b|shqip|albani|kosov/i.test(c.group));
   if (key) return list.filter((c) => c.group === key);
   return list;
@@ -261,6 +265,13 @@ function groupsOf(list, skipFixed = false) {
 }
 
 function liveGroupsList(chs) {
+  // SPORT: vetëm grupet e sportit
+  if (S.live.mode === 'sport') {
+    const sportGroups = groupsOf(chs).filter(isSportGroup).map((name) => ({
+      key: name, name, count: chs.filter((ch) => ch.group === name).length,
+    }));
+    return [{ key: '__sport', name: 'Të gjitha – Sport', count: liveFilter(chs, '__sport').length }].concat(sportGroups);
+  }
   const fixed = [
     { key: '', name: 'Të gjitha', count: chs.length },
     { key: '__fav', name: 'Të preferuarat', count: liveFilter(chs, '__fav').length },
@@ -604,7 +615,7 @@ view.addEventListener('click', (e) => {
     if (route() === 'live') { if (S.live.sel === ch.id) toggleFull(true); else playChannel(ch); }
     else { S.live.group = ''; S.live.sel = ch.id; location.hash = '#/live'; }
   } else if (d.go !== undefined) {
-    if (d.filter !== undefined) { S.live.group = d.filter; S.live.q = ''; }
+    if (d.filter !== undefined) { S.live.group = d.filter; S.live.q = ''; S.live.mode = d.filter === '__sport' ? 'sport' : ''; }
         location.hash = '#/' + d.go;
     if (d.go === 'live' && route() === 'live') live();
   } else if (d.lgroup !== undefined) {
@@ -653,6 +664,7 @@ view.addEventListener('click', (e) => {
 document.addEventListener('click', (e) => {
   if (!e.target.closest('a[data-nav="live"]')) return;
   S.live.q = '';
+  if (S.live.mode) { S.live.mode = ''; S.live.group = ''; }
   if (route() === 'live') live();
 });
 
