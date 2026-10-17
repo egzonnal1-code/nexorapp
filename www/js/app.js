@@ -161,7 +161,10 @@ function home() {
   const { live, movies, series } = S.data;
   const favs = live.filter((c) => isFav(c.id));
   const top = (favs.length ? favs : []).concat(live.filter((c) => !isFav(c.id))).slice(0, 10);
-  const lead = top[0];
+  // Kanali kryesor në kryefaqe: gjithmonë SuperSport 1 (nëse ekziston në listë)
+  const ss1 = live.filter((c) => /super\s*sport\s*1(?!\d)/i.test(c.name));
+  const isAlb = (c) => /\b(alb|al)\b|shqip|albani|kosov/i.test(c.name + ' ' + c.group);
+  const lead = ss1.find((c) => isAlb(c) && c.logo) || ss1.find(isAlb) || ss1.find((c) => c.logo) || ss1[0] || top[0];
   const vod = movies.filter((m) => m.logo).slice(0, 3);
   const fill = vod.length < 3 ? series.filter((m) => m.logo).slice(0, 3 - vod.length).map((s) => ({ ...s, isSeries: true })) : [];
   const side = vod.concat(fill);
@@ -183,7 +186,7 @@ function home() {
       <span class="t-meta">${esc(m.group)}</span></button>`;
   });
   for (let i = side.length; i < 3 && lead; i++) {
-    const c = top[i + 1];
+    const c = top.filter((x) => x !== lead)[i];
     if (!c) break;
     heroHtml += `<button class="tile ph" data-ch="${esc(c.id)}"><span class="t-title">${esc(c.name)}</span><span class="t-meta">${esc(c.group)}</span></button>`;
   }
