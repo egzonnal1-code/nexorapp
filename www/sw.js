@@ -2,7 +2,7 @@
 const CACHE = 'nexora-shell-v6';
 const SHELL = [
   './', './index.html', './css/style.css', './manifest.webmanifest',
-  './js/app.js', './js/m3u.js', './js/xtream.js', './js/epg.js', './js/cache.js',
+  './js/app.js', './js/m3u.js', './js/xtream.js', './js/epg.js', './js/cache.js', './js/cache.js',
   './js/player.js', './js/net.js', './js/store.js', './js/tvnav.js', './js/i18n.js',
   './assets/icon.svg', './assets/icon-192.png', './assets/icon-512.png',
 ];
