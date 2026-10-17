@@ -420,3 +420,8 @@ body.tvfull { overflow: hidden; }
 @media (min-width: 801px) and (min-height: 761px) {
   .lv-col, .lv-player { height: calc(100vh - 205px); }
 }
+
+/* Rrethi i vogël i ngarkimit (buffering) */
+.player video { background: #000; }
+.player-spin { position: absolute; left: 50%; top: 50%; width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%; border: 3px solid rgba(255,255,255,.18); border-top-color: var(--accent); animation: nx-spin .8s linear infinite; pointer-events: none; z-index: 2; }
+@keyframes nx-spin { to { transform: rotate(360deg); } }

@@ -47,7 +47,7 @@ export function credsOf(pl) {
 
 const arr = (x) => (Array.isArray(x) ? x : []);
 
-export async function load(pl) {
+export async function load(pl, { onPartial } = {}) {
   const { base, u, p, api } = urls(pl);
   const info = await fetchJson(api());
   if (!info || !info.user_info || Number(info.user_info.auth) !== 1) {
@@ -60,17 +60,15 @@ export async function load(pl) {
   const ext = formats.length === 0 || formats.includes('m3u8') ? 'm3u8' : 'ts';
 
   const safe = (a) => fetchJson(api(a)).catch(() => []);
-  const [lc, ls, vc, vs, sc, ss] = await Promise.all([
-    safe('get_live_categories'), safe('get_live_streams'),
-    safe('get_vod_categories'), safe('get_vod_streams'),
-    safe('get_series_categories'), safe('get_series'),
-  ]);
+  // Filmat dhe serialet (lista të mëdha) nisin njëkohësisht, por kanalet live shfaqen pa i pritur ato
+  const vodP = Promise.all([safe('get_vod_categories'), safe('get_vod_streams'), safe('get_series_categories'), safe('get_series')]);
+  const [lc, ls] = await Promise.all([safe('get_live_categories'), safe('get_live_streams')]);
   const catName = (list) => {
     const m = new Map();
     arr(list).forEach((c) => m.set(String(c.category_id), c.category_name));
     return (id) => m.get(String(id)) || 'Të tjera';
   };
-  const lcN = catName(lc), vcN = catName(vc), scN = catName(sc);
+  const lcN = catName(lc);
 
   const live = arr(ls).map((s, i) => ({
     id: 'x' + s.stream_id,
@@ -83,6 +81,15 @@ export async function load(pl) {
     url: `${base}/live/${u}/${p}/${s.stream_id}.${ext}`,
     catchup: Number(s.tv_archive) === 1,
   }));
+  const epgUrl = `${base}/xmltv.php?username=${u}&password=${p}`;
+  const account = {
+    expires: info.user_info.exp_date ? Number(info.user_info.exp_date) * 1000 : null,
+    maxConnections: info.user_info.max_connections || null,
+  };
+  if (onPartial) onPartial({ live, movies: [], series: [], epgUrl, account, partial: true });
+
+  const [vc, vs, sc, ss] = await vodP;
+  const vcN = catName(vc), scN = catName(sc);
   const movies = arr(vs).map((s) => ({
     id: 'v' + s.stream_id,
     name: s.name || 'Pa emër',
@@ -100,14 +107,7 @@ export async function load(pl) {
     plot: s.plot || '',
   }));
 
-  return {
-    live, movies, series,
-    epgUrl: `${base}/xmltv.php?username=${u}&password=${p}`,
-    account: {
-      expires: info.user_info.exp_date ? Number(info.user_info.exp_date) * 1000 : null,
-      maxConnections: info.user_info.max_connections || null,
-    },
-  };
+  return { live, movies, series, epgUrl, account };
 }
 
 export async function seriesInfo(pl, seriesId) {

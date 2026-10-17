@@ -3,6 +3,7 @@ import { loadDb, saveDb } from './store.js';
 import { parseM3U } from './m3u.js';
 import * as Xtream from './xtream.js';
 import { fetchText } from './net.js';
+import * as Cache from './cache.js';
 import { Epg } from './epg.js';
 import * as Player from './player.js';
 import './tvnav.js';
@@ -56,30 +57,81 @@ function setStatus(msg, isErr = false) {
 }
 
 // ---------- Ngarkimi i listës ----------
+// Merr listën nga serveri i ofruesit. onPartial: kanalet live sapo vijnë (pa pritur filmat)
+async function fetchList(pl, onPartial) {
+  if (pl.type === 'token') throw new Error('Lidhja me API Token nuk mbështetet më. Fshije këtë listë dhe shtoje si Xtream Codes ose M3U.');
+  let data;
+  if (pl.type === 'xtream') data = await Xtream.load(pl, { onPartial });
+  else if (Xtream.credsOf(pl)) data = await Xtream.load(Xtream.credsOf(pl), { onPartial });
+  else { const { text } = await fetchText(pl.m3uUrl); data = parseM3U(text); }
+  if (pl.epgUrl) data.epgUrl = pl.epgUrl;
+  return data;
+}
+
+// Rifreskon pamjen pa e ndalur kanalin që po luhet
+function refreshViews() {
+  if (!$('#overlay').hidden) return;
+  if (route() === 'live' && $('#live-video')) { renderGroupList(); renderChannelList(); renderLiveInfo(); return; }
+  if (!document.body.classList.contains('tvfull')) render();
+}
+
+// Rrethi i vogël i ngarkimit mbi video (në vend të ikonës së madhe "play")
+['loadstart', 'waiting', 'seeking'].forEach((ev) => document.addEventListener(ev, (e) => {
+  const sp = e.target && e.target.parentNode && e.target.parentNode.querySelector && e.target.parentNode.querySelector('.player-spin');
+  if (sp) sp.hidden = false;
+}, true));
+['playing', 'canplay', 'pause', 'error', 'emptied'].forEach((ev) => document.addEventListener(ev, (e) => {
+  const sp = e.target && e.target.parentNode && e.target.parentNode.querySelector && e.target.parentNode.querySelector('.player-spin');
+  if (sp) sp.hidden = true;
+}, true));
+
+let loadSeq = 0;
 async function loadActive({ quiet = false, silent = false } = {}) {
   const pl = active();
+  const seq = ++loadSeq;
   S.data = null; S.err = ''; S.epg = new Epg(); S.shortTried.clear();
   S.live = { group: '', q: '', sel: null };
   if (!pl) { render(); return; }
+
+  // 1) Shfaq menjëherë listën e ruajtur në pajisje
+  const cached = !quiet ? await Cache.getList(pl) : null;
+  if (seq !== loadSeq) return;
+  if (cached) {
+    S.data = cached;
+    S.loading = false;
+    render();
+    if (cached.epgUrl) loadEpg(cached.epgUrl);
+    // 2) Rifresko në sfond nga serveri
+    try {
+      const fresh = await fetchList(pl);
+      if (seq !== loadSeq) return;
+      S.data = fresh;
+      Cache.putList(pl, fresh);
+      refreshViews();
+    } catch (e) { /* mbetet lista e ruajtur */ }
+    return;
+  }
+
+  // Pa memorie (hera e parë): shfaq kanalet live sa më shpejt
   S.loading = true;
   setStatus(`Duke ngarkuar “${pl.name}”…`);
   if (!quiet) render(); else if (!silent) setup();
   try {
-    let data;
-    if (pl.type === 'xtream') data = await Xtream.load(pl);
-    else if (pl.type === 'token') throw new Error('Lidhja me API Token nuk mbështetet më. Fshije këtë listë dhe shtoje si Xtream Codes ose M3U.');
-    else if (Xtream.credsOf(pl)) data = await Xtream.load(Xtream.credsOf(pl));
-    else { const { text } = await fetchText(pl.m3uUrl); data = parseM3U(text); }
-    if (pl.epgUrl) data.epgUrl = pl.epgUrl;
+    const data = await fetchList(pl, (part) => {
+      if (seq !== loadSeq || quiet) return;
+      S.data = part; S.loading = false; setStatus(''); render();
+    });
+    if (seq !== loadSeq) return;
     S.data = data;
     setStatus('');
+    Cache.putList(pl, data);
     if (data.epgUrl) loadEpg(data.epgUrl);
   } catch (e) {
     S.err = e.message || String(e);
     setStatus('');
   }
   S.loading = false;
-  if (!quiet) render();
+  if (!quiet) refreshViews();
 }
 
 async function loadEpg(url) {
@@ -242,7 +294,7 @@ function live() {
       </aside>
       <section class="lv-player" aria-label="Luajtësi">
         <div class="player">
-          <video id="live-video" controls playsinline></video>
+          <video id="live-video" controls playsinline poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video><div class="player-spin" hidden></div>
           <span class="badge-live">● LIVE</span>
           <div class="player-msg" id="player-msg">Zgjidh një kanal nga lista.</div>
           <div class="player-status" id="player-status" hidden></div>
@@ -311,7 +363,7 @@ function playChannel(ch) {
   msg.hidden = true;
   const status = $('#player-status');
   if (status) status.hidden = true;
-  Player.play(video, ch.url, (m) => { msg.textContent = m; msg.hidden = false; if (status) status.hidden = true; },
+  Player.play(video, ch.url, (m) => { msg.textContent = m; msg.hidden = false; if (status) status.hidden = true; const sp = $('.lv-player .player-spin'); if (sp) sp.hidden = true; },
     (m) => { if (status) { status.textContent = m; status.hidden = !m; } });
   renderLiveInfo();
   ensureShortEpg(ch);
@@ -394,7 +446,7 @@ function closeOverlay() {
   $('#ov-body').innerHTML = '';
 }
 function playInOverlay(title, url) {
-  openOverlay(title, `<div class="player"><video id="ov-video" controls playsinline autoplay></video><div class="player-msg" id="ov-msg" hidden></div><div class="player-status" id="ov-status" hidden></div></div>`);
+  openOverlay(title, `<div class="player"><video id="ov-video" controls playsinline autoplay poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></video><div class="player-spin" hidden></div><div class="player-msg" id="ov-msg" hidden></div><div class="player-status" id="ov-status" hidden></div></div>`);
   Player.play($('#ov-video'), url, (m) => { const el = $('#ov-msg'); el.textContent = m; el.hidden = false; },
     (m) => { const st = $('#ov-status'); if (st) { st.textContent = m; st.hidden = !m; } });
 }
@@ -582,6 +634,7 @@ view.addEventListener('click', (e) => {
   } else if (d.plDel) {
     if (!confirm('Ta fshij këtë listë nga kjo pajisje?')) return;
     db.playlists = db.playlists.filter((p) => p.id !== d.plDel);
+    Cache.removeList(d.plDel);
     if (db.activeId === d.plDel) { db.activeId = db.playlists[0]?.id || null; saveDb(db); loadActive(); }
     else { saveDb(db); lists(); }
   } else if (d.act === 'new-list' || d.act === 'cancel-edit') {
