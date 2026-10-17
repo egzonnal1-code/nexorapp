@@ -68,21 +68,19 @@ jobs:
         env:
           KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           chmod +x gradlew
           if [ -n "$KS_B64" ]; then
             # Nënshkrim i përhershëm → përditësimet instalohen mbi versionin e vjetër
             KS_PASS="$(printf '%s' "$KS_PASS" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-            KS_ALIAS="$(printf '%s' "$KS_ALIAS" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-            KS_ALIAS="${KS_ALIAS:-nexora}"
+            KS_ALIAS="nexora"
             printf '%s' "$KS_B64" | tr -d ' \r\n\t' | base64 -d > "$RUNNER_TEMP/release.jks" \
               || { echo "::error::ANDROID_KEYSTORE_B64 nuk është i saktë – kopjo prapë gjithë tekstin nga ANDROID_KEYSTORE_B64.txt"; exit 1; }
             echo "Keystore: $(stat -c %s "$RUNNER_TEMP/release.jks") bytes (duhet 4328) · fjalëkalimi: ${#KS_PASS} shenja (duhet 24) · alias: ${#KS_ALIAS} shenja"
             OUT="$(keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KS_PASS" 2>&1)" || {
               if printf '%s' "$OUT" | grep -qi 'password'; then echo "::error::ANDROID_KEYSTORE_PASSWORD është gabim (gjatësia ${#KS_PASS}, duhet 24 shenja)";
               else echo "::error::ANDROID_KEYSTORE_B64 është i paplotë ose i gabuar ($(stat -c %s "$RUNNER_TEMP/release.jks") bytes, duhet 4328)"; fi; exit 1; }
-            printf '%s' "$OUT" | grep -qi "^$KS_ALIAS," || { echo "::error::ANDROID_KEY_ALIAS është gabim – duhet: nexora"; exit 1; }
+            printf '%s' "$OUT" | grep -qi "^$KS_ALIAS," || { echo "::error::Çelësi nuk ka alias 'nexora' – kontrollo ANDROID_KEYSTORE_B64"; exit 1; }
             ./gradlew assembleRelease --no-daemon || { echo "::error::Gradle assembleRelease dështoi"; exit 1; }
             SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
             [ -d "$SDK/build-tools" ] || { echo "::error::Android SDK build-tools nuk u gjetën ($SDK)"; exit 1; }
