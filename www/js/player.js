@@ -11,8 +11,8 @@ let watchdog = null;
 // ---------- Cilësimet e buffer-it ----------
 const BUF_KEY = 'nexora.buffer';
 export const BUFFERS = {
-  small: { label: 'I vogël – fillon shpejt', hlsSync: 2, hlsAhead: 15, tsStash: 128 * 1024 },
-  normal: { label: 'Normal', hlsSync: 3, hlsAhead: 30, tsStash: 384 * 1024 },
+  small: { label: 'I vogël – fillon shpejt', hlsSync: 2, hlsAhead: 15, tsStash: 64 * 1024 },
+  normal: { label: 'Normal', hlsSync: 3, hlsAhead: 30, tsStash: 128 * 1024 },
   large: { label: 'I madh – ngec më rrallë', hlsSync: 6, hlsAhead: 60, tsStash: 1024 * 1024 },
 };
 export function getBuffer() {
@@ -56,15 +56,40 @@ const kind = (url) => {
   return 'hls';
 };
 
-// Për kanalet live të Xtream: /live/u/p/123.m3u8 ⇄ /live/u/p/123.ts
+// Kanalet që luajnë vetëm si .m3u8 mbahen mend, që herën tjetër të hapen menjëherë
+const FMT_KEY = 'nexora.fmt';
+const keyOf = (url) => url.split('?')[0].replace(/\.(m3u8|ts)$/i, '');
+function hlsOnly() {
+  try { return JSON.parse(localStorage.getItem(FMT_KEY) || '[]'); } catch (e) { return []; }
+}
+function remember(url, needsHls) {
+  try {
+    const k = keyOf(url);
+    let l = hlsOnly().filter((x) => x !== k);
+    if (needsHls) l.push(k);
+    if (l.length > 300) l = l.slice(-300);
+    localStorage.setItem(FMT_KEY, JSON.stringify(l));
+  } catch (e) { /* ruajtja nuk punon */ }
+}
+const tsOk = () => !!(window.mpegts && window.mpegts.getFeatureList().mseLivePlayback);
+
+// Për kanalet live të Xtream: /live/u/p/123.ts ⇄ /live/u/p/123.m3u8
+// .ts (transmetim i drejtpërdrejtë) fillon zakonisht brenda 1–2 sekondash, ndërsa .m3u8 te shumë
+// ofrues pret derisa serveri të përgatisë segmentet (5–10 s) – prandaj provohet i pari .ts.
 function alternates(url) {
-  const list = [url];
   const [path, q] = url.split('?');
   const qs = q ? '?' + q : '';
-  if (/\.m3u8$/i.test(path)) list.push(path.replace(/\.m3u8$/i, '.ts') + qs);
-  else if (/\.ts$/i.test(path)) list.push(path.replace(/\.ts$/i, '.m3u8') + qs);
-  else if (/\/live\/[^/]+\/[^/]+\/\d+$/i.test(path)) list.push(path + '.ts' + qs, path + '.m3u8' + qs);
-  return list;
+  if (!/\/live\//i.test(path) || /\.(mp4|mkv|webm|mov|avi|m4v)$/i.test(path)) {
+    const list = [url];
+    if (/\.m3u8$/i.test(path)) list.push(path.replace(/\.m3u8$/i, '.ts') + qs);
+    else if (/\.ts$/i.test(path)) list.push(path.replace(/\.ts$/i, '.m3u8') + qs);
+    return list;
+  }
+  const bare = path.replace(/\.(m3u8|ts)$/i, '');
+  const tsU = bare + '.ts' + qs;
+  const hlsU = bare + '.m3u8' + qs;
+  if (!tsOk() || hlsOnly().includes(bare)) return [hlsU, tsU];
+  return [tsU, hlsU];
 }
 
 function tryHls(video, url, id, buf) {
@@ -74,6 +99,8 @@ function tryHls(video, url, id, buf) {
     hls = new window.Hls({
       enableWorker: true,
       lowLatencyMode: false,
+      startFragPrefetch: true,
+      initialLiveManifestSize: 1,
       liveSyncDurationCount: buf.hlsSync,
       maxBufferLength: buf.hlsAhead,
       maxMaxBufferLength: buf.hlsAhead * 2,
@@ -149,12 +176,16 @@ function explain(reasons) {
 
 async function start(video, url, id, buf) {
   const reasons = [];
-  for (const u of alternates(url)) {
+  const list = alternates(url);
+  for (let i = 0; i < list.length; i++) {
+    const u = list[i];
     if (id !== session) return { ok: false, reasons };
     const k = kind(u);
     try {
       const attempt = k === 'ts' ? tryTs(video, u, id, buf) : k === 'file' ? tryFile(video, u, id) : tryHls(video, u, id, buf);
-      await withTimeout(attempt, 15000);
+      // nëse ka format rezervë, mos prit gjatë te i pari
+      await withTimeout(attempt, i < list.length - 1 ? 7000 : 15000);
+      if (/\/live\//i.test(u) && (k === 'ts' || i > 0)) remember(u, k === 'hls');
       return { ok: true, reasons, url: u, live: k !== 'file' };
     } catch (e) {
       reasons.push(String(e));
