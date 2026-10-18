@@ -566,15 +566,6 @@ function lists() {
         </div>`).join('')}
       ${S.data && S.data.account && S.data.account.expires ? `<p class="hint">Llogaria Xtream skadon më: ${new Date(S.data.account.expires).toLocaleDateString(locale())}</p>` : ''}
       <p class="hint">Të dhënat ruhen vetëm në këtë pajisje. NEXORA nuk i merr dhe nuk i ruan në server.</p>
-    </section>
-    <section class="card" aria-labelledby="h-play" style="max-width:820px">
-      <div class="sec-head"><h2 id="h-play">Luajtja</h2></div>
-      <div class="field"><span>Buffer-i (sa video ngarkohet përpara)</span>
-        <div class="seg seg-3" role="radiogroup" aria-label="Buffer-i">
-          ${Object.entries(Player.BUFFERS).map(([k, b]) => `<button type="button" role="radio" aria-checked="${Player.getBuffer() === k}" class="${Player.getBuffer() === k ? 'on' : ''}" data-buffer="${k}">${b.label}</button>`).join('')}
-        </div>
-      </div>
-      <p class="hint">Nëse kanalet ngecin shpesh, zgjidh “I madh”. Kanali fillon pak më ngadalë, por ngec më rrallë. Kur transmetimi ndalet, NEXORA rilidhet vetë.</p>
     </section>`;
 }
 
@@ -654,8 +645,6 @@ view.addEventListener('click', (e) => {
     S.editId = null; S.formErr = ''; S.draft = null;
   } else if (d.act === 'reload') {
     loadActive();
-  } else if (d.buffer) {
-    Player.setBuffer(d.buffer); lists();
   } else if (d.act === 'live-search') {
     const q = $('#live-q'); if (q) { q.focus(); q.select(); }
   } else if (d.act === 'fullscreen') {
@@ -708,6 +697,8 @@ function toggleFull(on) {
   }
 }
 window.addEventListener('hashchange', () => toggleFull(false));
+// Android: klikimi mbi videon e luajtësit vendas
+window.addEventListener('nexora:videoclick', () => { if (route() === 'live') toggleFull(); });
 
 document.addEventListener('keydown', (e) => {
   if (document.body.classList.contains('tvfull')) {

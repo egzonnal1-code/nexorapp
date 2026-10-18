@@ -22,6 +22,9 @@ jobs:
         with:
           node-version: 20
       - run: npm install --no-audit --no-fund
+      - name: Kontrollo ffmpeg (zëri Dolby / 4K në Windows)
+        shell: bash
+        run: ls -la node_modules/ffmpeg-static/ffmpeg.exe
       - run: npm run build:win
       - uses: actions/upload-artifact@v4
         with:
@@ -46,6 +49,20 @@ jobs:
         run: npm run android:icons
         continue-on-error: true
       - run: npx cap sync android
+      - name: Luajtësi vendas ExoPlayer (4K/HEVC, zë Dolby)
+        run: |
+          DEST=android/app/src/main/java/ch/nexoraweb/player
+          mkdir -p "$DEST"
+          cp android-native/java/ch/nexoraweb/player/*.java "$DEST/"
+          cat >> android/app/build.gradle <<'GRADLE'
+
+          dependencies {
+              implementation "androidx.media3:media3-exoplayer:1.4.1"
+              implementation "androidx.media3:media3-exoplayer-hls:1.4.1"
+              implementation "androidx.media3:media3-ui:1.4.1"
+          }
+          GRADLE
+          ls -la "$DEST"
       - name: Banner për Android TV
         run: |
           mkdir -p android/app/src/main/res/drawable-xhdpi

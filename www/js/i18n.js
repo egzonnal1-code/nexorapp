@@ -316,3 +316,8 @@ observer.observe(document.body, { subtree: true, childList: true, characterData:
 document.getElementById('language-select')?.addEventListener('change', (event) => {
   setLanguage(event.target.value);
 });
+
+// Përkthim i një teksti të vetëm (p.sh. për mesazhet që shfaq luajtësi vendas i Android-it)
+export function tr(value) {
+  return translateText(String(value || ''), getLanguage());
+}
