@@ -191,7 +191,7 @@ async function start(video, url, id) {
     try {
       const attempt = c.eng === 'ts' ? tryTs(video, c.url, id) : c.eng === 'file' ? tryFile(video, c.url, id) : tryHls(video, c.url, id);
       // nëse ka format rezervë, mos prit gjatë te i pari
-      await withTimeout(attempt, i < list.length - 1 ? 8000 : 15000);
+      await withTimeout(attempt, i < list.length - 1 ? 6000 : 15000);
       if (c.fmt && isXtreamLive(c.fmt) && (c.eng === 'ts' || i > 0)) remember(c.fmt, c.eng === 'hls');
       return { ok: true, reasons, live: c.eng !== 'file' };
     } catch (e) {
@@ -285,7 +285,7 @@ async function playNative(p, video, url, id, onError, onStatus) {
       let fin = false;
       let t = null;
       const finish = (v) => { if (!fin) { fin = true; clearTimeout(t); done(v); } };
-      t = setTimeout(() => finish({ ok: false, reason: 'koha mbaroi' }), i < list.length - 1 ? 9000 : 20000);
+      t = setTimeout(() => finish({ ok: false, reason: 'koha mbaroi' }), i < list.length - 1 ? 6000 : 20000);
       natHandler = (ev, d) => {
         if (id !== session) return;
         if (ev === 'ready') finish({ ok: true });
